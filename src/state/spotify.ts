@@ -180,6 +180,19 @@ export const seek = (positionMs: number): void => {
 };
 
 export const setVolume = (volume: number): void => {
-  updateSettings({ volume });
-  void player?.setVolume(volume).catch(fail);
+  const clamped = Math.min(1, Math.max(0, volume));
+  updateSettings({ volume: clamped });
+  void player?.setVolume(clamped).catch(fail);
+};
+
+/** ミュート前の音量（ミュート解除時に戻す） */
+let volumeBeforeMute = 0.5;
+
+export const toggleMute = (): void => {
+  if (settings.volume > 0) {
+    volumeBeforeMute = settings.volume;
+    setVolume(0);
+  } else {
+    setVolume(volumeBeforeMute || 0.5);
+  }
 };

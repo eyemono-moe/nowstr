@@ -1,33 +1,11 @@
-import { Slider } from "@ark-ui/solid/slider";
 import { Match, Show, Switch } from "solid-js";
 import { isPipSupported, pipWindow, togglePip } from "../pip/pip";
-import { settings } from "../state/settings";
-import { playback, retryPlayer, setVolume, spotify, transferHere } from "../state/spotify";
+import { playback, retryPlayer, spotify, transferHere } from "../state/spotify";
 import { Artwork } from "./Artwork";
 import { NostrStatusBadge } from "./NostrStatusBadge";
 import { PlayerControls } from "./PlayerControls";
 import { ProgressBar } from "./ProgressBar";
-
-const VolumeControl = () => (
-  <Slider.Root
-    class="w-24"
-    min={0}
-    max={1}
-    step={0.01}
-    value={[settings.volume]}
-    aria-label={["音量"]}
-    onValueChange={({ value }) => setVolume(value[0] ?? 0)}
-  >
-    <Slider.Control class="group relative flex h-4 items-center">
-      <Slider.Track class="h-1 flex-1 overflow-hidden rounded-full bg-surface-hover">
-        <Slider.Range class="h-full bg-muted group-hover:bg-accent" />
-      </Slider.Track>
-      <Slider.Thumb index={0} class="block h-3 w-3 rounded-full bg-fg outline-none">
-        <Slider.HiddenInput />
-      </Slider.Thumb>
-    </Slider.Control>
-  </Slider.Root>
-);
+import { VolumeControl } from "./VolumeControl";
 
 /** Player が使えない・この device で再生していないときの案内 */
 const PlayerNotice = () => (
@@ -99,7 +77,6 @@ export const NowPlaying = () => {
       <div class="w-full flex items-center justify-between">
         <NostrStatusBadge />
         <div class="flex items-center gap-2">
-          <div class="i-lucide-volume-2 text-muted" />
           <VolumeControl />
           <button
             type="button"

@@ -1,11 +1,14 @@
 import { Slider } from "@ark-ui/solid/slider";
-import { createSignal } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { currentPositionMs } from "../core/playback";
 import { formatTime, now } from "../lib/clock";
 import { playback, seek } from "../state/spotify";
 
-/** 再生位置の表示と seek。ドラッグ中は表示だけ追従させ、離したときに seek する */
-export const ProgressBar = (props: { compact?: boolean }) => {
+/**
+ * 再生位置の表示と seek。ドラッグ中は表示だけ追従させ、離したときに seek する。
+ * `showTime={false}` で経過時間 / 曲の長さを省略する（狭い PiP 用）。
+ */
+export const ProgressBar = (props: { compact?: boolean; showTime?: boolean }) => {
   const [dragging, setDragging] = createSignal<number | null>(null);
   const duration = () => playback()?.durationMs ?? 0;
   const position = () => {
@@ -15,7 +18,9 @@ export const ProgressBar = (props: { compact?: boolean }) => {
 
   return (
     <div class="w-full flex items-center gap-2 text-xs text-muted tabular-nums">
-      <span class="w-10 text-right">{formatTime(position())}</span>
+      <Show when={props.showTime ?? true}>
+        <span class="w-10 text-right">{formatTime(position())}</span>
+      </Show>
       <Slider.Root
         class="flex-1"
         min={0}
@@ -44,7 +49,9 @@ export const ProgressBar = (props: { compact?: boolean }) => {
           </Slider.Thumb>
         </Slider.Control>
       </Slider.Root>
-      <span class="w-10">{formatTime(duration())}</span>
+      <Show when={props.showTime ?? true}>
+        <span class="w-10">{formatTime(duration())}</span>
+      </Show>
     </div>
   );
 };

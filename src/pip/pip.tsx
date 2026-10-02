@@ -74,10 +74,14 @@ export const togglePip = async (): Promise<void> => {
     const root = doc.createElement("div");
     root.className = "h-full";
     doc.body.append(root);
+    const [size, setSize] = createSignal({ width: win.innerWidth, height: win.innerHeight });
+    win.addEventListener("resize", () =>
+      setSize({ width: win.innerWidth, height: win.innerHeight }),
+    );
     const dispose = render(
       () => (
         <EnvironmentProvider value={() => doc}>
-          <MiniPlayer />
+          <MiniPlayer size={size()} />
         </EnvironmentProvider>
       ),
       root,

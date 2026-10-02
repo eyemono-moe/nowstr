@@ -1,14 +1,17 @@
 import { nextTrack, playback, previousTrack, spotify, togglePlay } from "../state/spotify";
 
-export const PlayerControls = (props: { compact?: boolean }) => {
+/** `dense` は PiP の1行レイアウト用にボタンをさらに小さくする */
+export const PlayerControls = (props: { compact?: boolean; dense?: boolean }) => {
   const disabled = () => spotify.player !== "ready" || playback() === null;
   const paused = () => playback()?.paused ?? true;
 
   return (
-    <div class={`flex items-center justify-center ${props.compact ? "gap-1" : "gap-4"}`}>
+    <div
+      class={`flex shrink-0 items-center justify-center ${props.compact || props.dense ? "gap-1" : "gap-4"}`}
+    >
       <button
         type="button"
-        class="btn-icon"
+        class={`btn-icon ${props.dense ? "p-1" : ""}`}
         aria-label="前の曲"
         title="前の曲"
         disabled={disabled()}
@@ -18,7 +21,7 @@ export const PlayerControls = (props: { compact?: boolean }) => {
       </button>
       <button
         type="button"
-        class={`btn-icon bg-fg! text-bg! hover:scale-105 ${props.compact ? "p-2" : "p-3"}`}
+        class={`btn-icon bg-fg! text-bg! hover:scale-105 ${props.dense ? "p-1.5" : props.compact ? "p-2" : "p-3"}`}
         aria-label={paused() ? "再生" : "一時停止"}
         title={paused() ? "再生" : "一時停止"}
         disabled={disabled()}
@@ -28,7 +31,7 @@ export const PlayerControls = (props: { compact?: boolean }) => {
       </button>
       <button
         type="button"
-        class="btn-icon"
+        class={`btn-icon ${props.dense ? "p-1" : ""}`}
         aria-label="次の曲"
         title="次の曲"
         disabled={disabled()}
