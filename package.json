@@ -15,6 +15,7 @@
     "@iconify-json/lucide": "^1.2.138",
     "@types/node": "^24.13.3",
     "@types/spotify-web-playback-sdk": "^0.1.19",
+    "@vitejs/plugin-basic-ssl": "^2.3.0",
     "typescript": "~6.0.2",
     "unocss": "^66.10.5",
     "vite": "catalog:",

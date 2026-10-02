@@ -119,7 +119,9 @@ export const loginNostr = async (): Promise<void> => {
     notifyError(
       new AppError(
         "nip07_unavailable",
-        "NIP-07 対応のブラウザ拡張（nos2x, Alby など）が見つかりません。拡張を有効にしてからページを再読み込みしてください。",
+        location.protocol === "http:" && location.hostname !== "localhost"
+          ? "NIP-07 拡張が見つかりません。拡張によっては https でしか動作しないため、https:// で開き直してください。"
+          : "NIP-07 対応のブラウザ拡張（nos2x, Alby など）が見つかりません。拡張を有効にしてからページを再読み込みしてください。",
       ),
       "Nostr",
     );

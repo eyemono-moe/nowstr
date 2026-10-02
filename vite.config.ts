@@ -1,3 +1,4 @@
+import basicSsl from "@vitejs/plugin-basic-ssl";
 import UnoCSS from "unocss/vite";
 import { defineConfig, lazyPlugins } from "vite-plus";
 import solid from "vite-plugin-solid";
@@ -22,8 +23,10 @@ export default defineConfig({
       deploy: { command: "vp build && wrangler deploy", cache: false },
     },
   },
-  // Spotify は redirect URI に `localhost` を許可しないため、ループバック IP で待ち受ける。
+  // - Spotify は redirect URI に `localhost` を許可しないため、ループバック IP で待ち受ける。
+  // - NIP-07 拡張には https（と http://localhost）でしか window.nostr を注入しないものがある
+  //   （AKA Profiles など）ため、自己署名証明書で HTTPS にする。
   server: { host: "127.0.0.1", port: 5173, strictPort: true },
   preview: { host: "127.0.0.1", port: 4173, strictPort: true },
-  plugins: lazyPlugins(() => [UnoCSS(), solid()]),
+  plugins: lazyPlugins(() => [basicSsl({ name: "nowstr-dev" }), UnoCSS(), solid()]),
 });

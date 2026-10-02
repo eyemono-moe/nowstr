@@ -44,13 +44,17 @@ Nowstr のコールバックパスは `/callback` です。
 
 | 環境                      | Redirect URI                              |
 | ------------------------- | ----------------------------------------- |
-| 開発 (`vp dev`)           | `http://127.0.0.1:5173/callback`          |
-| プレビュー (`vp preview`) | `http://127.0.0.1:4173/callback`          |
+| 開発 (`vp dev`)           | `https://127.0.0.1:5173/callback`         |
+| プレビュー (`vp preview`) | `https://127.0.0.1:4173/callback`         |
 | 本番 (Cloudflare Workers) | `https://<デプロイ先のドメイン>/callback` |
 
 > [!IMPORTANT]
-> Spotify は `localhost` を Redirect URI として許可しません。ループバック IP（`127.0.0.1`）を使うか HTTPS にする必要があります。
-> そのため開発サーバーは `127.0.0.1:5173` で起動するようにしています。ブラウザでも `http://127.0.0.1:5173/` を開いてください。
+> 開発サーバーは **`https://127.0.0.1:5173/`**（自己署名証明書の HTTPS）で起動します。ブラウザもこの URL で開いてください。初回は証明書の警告が出るので、「詳細設定」から続行してください。
+>
+> - Spotify は `localhost` を Redirect URI として許可しません（ループバック IP の `127.0.0.1` か HTTPS が必要）。
+> - NIP-07 拡張の中には、`https://` と `http://localhost` でしか `window.nostr` を注入しないものがあります（例: AKA Profiles）。そのため `http://127.0.0.1` では NIP-07 が使えません。
+>
+> この両方を満たすため、`127.0.0.1` を HTTPS で配信しています（`@vitejs/plugin-basic-ssl`）。
 
 ### Development Mode の制限（2026 年時点）
 
@@ -79,7 +83,7 @@ Client ID は公開情報なので、ビルド成果物に埋め込まれても�
 
 ```sh
 vp install        # 依存関係のインストール
-vp dev            # 開発サーバー (http://127.0.0.1:5173/)
+vp dev            # 開発サーバー (https://127.0.0.1:5173/)
 ```
 
 ### コマンド一覧
