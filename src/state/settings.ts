@@ -9,6 +9,8 @@ export const RELAY_LIST_INDEXERS = ["wss://purplepag.es", "wss://directory.yabu.
 export type Settings = {
   /** music status を投稿するか */
   statusEnabled: boolean;
+  /** タブを閉じたときに status を消す（曲ごとに消去用イベントへの署名が1回増える） */
+  clearOnClose: boolean;
   /** NIP-65 relay list が見つからないときに使う relay */
   fallbackRelays: string[];
   /** 前回 Nostr にログインしていたら起動時に再接続する */
@@ -19,6 +21,7 @@ const KEY = "nowstr:settings";
 
 const defaults: Settings = {
   statusEnabled: true,
+  clearOnClose: true,
   fallbackRelays: DEFAULT_FALLBACK_RELAYS,
   nostrAutoConnect: false,
 };

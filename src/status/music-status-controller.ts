@@ -26,6 +26,12 @@ type Options = {
   onChange: (snapshot: StatusSnapshot) => void;
   /** 曲送りを連打したときに途中の曲を投稿しないための待ち時間 */
   debounceMs?: number;
+  /**
+   * タブを閉じたときに送る消去イベントを用意する（null は「用意していたものを破棄」）。
+   * タブを閉じる瞬間には署名を待てないため、publish のたびに事前に署名しておく必要がある。
+   * 失敗しても status の送信は止めない。
+   */
+  prepareUnloadClear?: (event: EventTemplate | null) => Promise<void>;
 };
 
 /**
@@ -76,10 +82,14 @@ export class MusicStatusController {
     return this.running;
   }
 
+  /** addressable event は created_at が新しい方が勝つため、同一秒の連続送信でも単調増加させる */
+  private nextCreatedAt(): number {
+    this.lastCreatedAt = Math.max(Math.floor(Date.now() / 1000), this.lastCreatedAt + 1);
+    return this.lastCreatedAt;
+  }
+
   private async apply(action: Exclude<StatusAction, { type: "none" }>): Promise<void> {
-    // addressable event は created_at が新しい方が勝つため、同一秒の連続送信でも単調増加させる
-    const createdAt = Math.max(Math.floor(Date.now() / 1000), this.lastCreatedAt + 1);
-    this.lastCreatedAt = createdAt;
+    const createdAt = this.nextCreatedAt();
     const next = action.type === "publish" ? action.status : null;
     const event =
       action.type === "publish"
@@ -87,8 +97,10 @@ export class MusicStatusController {
         : buildClearMusicStatusEvent(createdAt);
 
     this.options.onChange({ phase: "sending", status: this.published, error: null });
+    let sent = false;
     try {
       await this.options.send(event);
+      sent = true;
       this.options.onChange({
         phase: next ? "published" : "cleared",
         status: next,
@@ -97,8 +109,20 @@ export class MusicStatusController {
     } catch (error) {
       this.options.onChange({ phase: "error", status: next, error });
     }
+    await this.prepareUnloadClear(sent && next !== null);
     // 失敗しても「送ろうとした状態」を記録し、署名ダイアログ等の再送ループを避ける。
     // 次に曲や再生状態が変われば改めて送信される。
     this.published = next;
+  }
+
+  private async prepareUnloadClear(published: boolean): Promise<void> {
+    if (!this.options.prepareUnloadClear) return;
+    // 消去イベントは直前の publish より新しくないと効かないので、created_at を予約しておく
+    const event = published ? buildClearMusicStatusEvent(this.nextCreatedAt()) : null;
+    try {
+      await this.options.prepareUnloadClear(event);
+    } catch (error) {
+      console.warn("Failed to prepare the status clear event for page unload", error);
+    }
   }
 }

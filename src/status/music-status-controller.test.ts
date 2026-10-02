@@ -114,4 +114,73 @@ describe("MusicStatusController", () => {
     await create().clearNow();
     expect(sent).toHaveLength(0);
   });
+
+  describe("タブを閉じたとき用の消去イベント", () => {
+    const createWithUnload = () => {
+      const prepared: (EventTemplate | null)[] = [];
+      const controller = new MusicStatusController({
+        send,
+        onChange: () => {},
+        debounceMs: 500,
+        prepareUnloadClear: async (event) => {
+          prepared.push(event);
+        },
+      });
+      return { controller, prepared };
+    };
+
+    it("publish 成功後に、publish より新しい created_at の clear を用意する", async () => {
+      const { controller, prepared } = createWithUnload();
+      controller.update(state());
+      await vi.advanceTimersByTimeAsync(500);
+      expect(prepared).toHaveLength(1);
+      expect(prepared[0]?.content).toBe("");
+      expect(prepared[0]!.created_at).toBe(sent[0]!.created_at + 1);
+    });
+
+    it("用意した clear より後の送信は、さらに新しい created_at を使う", async () => {
+      const { controller, prepared } = createWithUnload();
+      controller.update(state());
+      await vi.advanceTimersByTimeAsync(500);
+      controller.update(state({ track: trackB }));
+      await vi.advanceTimersByTimeAsync(500);
+      expect(sent[1]!.created_at).toBeGreaterThan(prepared[0]!.created_at);
+      expect(prepared[1]!.created_at).toBe(sent[1]!.created_at + 1);
+    });
+
+    it("clear したら用意していた消去イベントを破棄する", async () => {
+      const { controller, prepared } = createWithUnload();
+      controller.update(state());
+      await vi.advanceTimersByTimeAsync(500);
+      controller.update(state({ paused: true }));
+      await vi.advanceTimersByTimeAsync(500);
+      expect(prepared.at(-1)).toBeNull();
+    });
+
+    it("publish に失敗したときは用意しない", async () => {
+      send = vi.fn(async () => {
+        throw new Error("boom");
+      });
+      const { controller, prepared } = createWithUnload();
+      controller.update(state());
+      await vi.advanceTimersByTimeAsync(500);
+      expect(prepared).toEqual([null]);
+    });
+
+    it("用意に失敗しても status の送信は続ける", async () => {
+      const controller = new MusicStatusController({
+        send,
+        onChange: () => {},
+        debounceMs: 500,
+        prepareUnloadClear: async () => {
+          throw new Error("rejected");
+        },
+      });
+      controller.update(state());
+      await vi.advanceTimersByTimeAsync(500);
+      controller.update(state({ track: trackB }));
+      await vi.advanceTimersByTimeAsync(500);
+      expect(sent.map((event) => event.content)).toEqual(["A - X", "B - X"]);
+    });
+  });
 });

@@ -4,6 +4,7 @@ import { normalizeRelayUrl } from "../core/relay-list";
 import { AppError } from "../lib/errors";
 import { NostrRelayClient } from "../nostr/publisher";
 import { createNip07Signer, hasNip07, type NostrSigner, waitForNip07 } from "../nostr/signer";
+import { UnloadSender } from "../nostr/unload-sender";
 import { MusicStatusController, type StatusSnapshot } from "../status/music-status-controller";
 import { RELAY_LIST_INDEXERS, settings, updateSettings } from "./settings";
 import { notifyError } from "./toast";
@@ -67,8 +68,20 @@ const signAndPublish = async (template: EventTemplate): Promise<void> => {
   );
 };
 
+const unloadSender = new UnloadSender();
+
+// タブを閉じるときは署名も接続も待てないので、事前に署名した消去イベントを開いている接続へ送るだけ
+window.addEventListener("pagehide", () => unloadSender.flush());
+
 export const statusController = new MusicStatusController({
   send: signAndPublish,
+  prepareUnloadClear: async (template) => {
+    if (!template || !settings.clearOnClose || !signer) {
+      unloadSender.arm(null, []);
+      return;
+    }
+    unloadSender.arm(await signer.signEvent(template), store.relays);
+  },
   onChange: (snapshot) => {
     setStore("status", snapshot);
     if (snapshot.phase === "error") notifyError(snapshot.error, "Nostr status");
@@ -168,3 +181,9 @@ export const refreshRelays = async (): Promise<void> => {
 
 export const canPublishStatus = (): boolean =>
   store.pubkey !== null && store.relays.length > 0 && !store.connecting;
+
+/** オフにしたときは用意済みの消去イベントも破棄する。オンは次の publish から有効になる */
+export const setClearOnClose = (enabled: boolean): void => {
+  updateSettings({ clearOnClose: enabled });
+  if (!enabled) unloadSender.arm(null, []);
+};

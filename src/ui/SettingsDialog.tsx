@@ -3,7 +3,7 @@ import { Switch } from "@ark-ui/solid/switch";
 import { createSignal, For, Show } from "solid-js";
 import { Portal } from "solid-js/web";
 import { normalizeRelayUrl } from "../core/relay-list";
-import { nostr, refreshRelays } from "../state/nostr";
+import { nostr, refreshRelays, setClearOnClose } from "../state/nostr";
 import { DEFAULT_FALLBACK_RELAYS, settings, updateSettings } from "../state/settings";
 import { notifyInfo } from "../state/toast";
 
@@ -50,6 +50,24 @@ export const SettingsDialog = () => {
                 </p>
               </div>
               <Switch.Control class="h-6 w-11 shrink-0 rounded-full bg-surface-hover p-0.5 transition data-[state=checked]:bg-accent">
+                <Switch.Thumb class="block h-5 w-5 rounded-full bg-fg transition data-[state=checked]:translate-x-5" />
+              </Switch.Control>
+              <Switch.HiddenInput />
+            </Switch.Root>
+
+            <Switch.Root
+              class="flex items-center justify-between gap-4"
+              checked={settings.clearOnClose}
+              disabled={!settings.statusEnabled}
+              onCheckedChange={({ checked }) => setClearOnClose(checked)}
+            >
+              <div>
+                <Switch.Label class="font-medium">タブを閉じたときにステータスを消す</Switch.Label>
+                <p class="text-xs text-muted">
+                  曲ごとに、消去用のイベントにも前もって署名しておきます（署名のたびに確認が出る拡張では、確認が1曲につき2回になります）。オンにした設定は次の曲から有効になります。
+                </p>
+              </div>
+              <Switch.Control class="h-6 w-11 shrink-0 rounded-full bg-surface-hover p-0.5 transition data-[state=checked]:bg-accent data-[disabled]:opacity-40">
                 <Switch.Thumb class="block h-5 w-5 rounded-full bg-fg transition data-[state=checked]:translate-x-5" />
               </Switch.Control>
               <Switch.HiddenInput />

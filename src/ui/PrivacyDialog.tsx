@@ -115,7 +115,10 @@ export const PrivacyDialog = () => {
                     の expiration）を過ぎたイベントの削除は各 relay の実装に依存します。
                   </li>
                 </ul>
-                <p>music status の投稿は、設定画面からいつでもオフにできます。</p>
+                <p>
+                  タブを閉じたときにステータスを消すため、ステータスを消去するイベント（内容が空の公開イベント）にも前もって署名し、タブを閉じる際に送信します。music
+                  status の投稿とこの消去は、設定画面からいつでもオフにできます。
+                </p>
               </Section>
 
               <Section title="アクセス解析・Cookie">
