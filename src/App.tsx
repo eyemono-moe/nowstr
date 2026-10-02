@@ -1,102 +1,69 @@
-import { createSignal } from "solid-js";
-import heroImg from "./assets/hero.png";
-import solidLogo from "./assets/solid.svg";
-import viteLogo from "./assets/vite.svg";
-import "./App.css";
+import { createEffect, onMount, Show } from "solid-js";
+import { canPublishStatus, initNostr, statusController } from "./state/nostr";
+import { settings } from "./state/settings";
+import { initSpotify, playback, spotify } from "./state/spotify";
+import { ConnectionPanel } from "./ui/ConnectionPanel";
+import { NowPlaying } from "./ui/NowPlaying";
+import { PlaylistPicker } from "./ui/PlaylistPicker";
+import { SettingsDialog } from "./ui/SettingsDialog";
+import { Toaster } from "./ui/Toaster";
 
-function App() {
-  const [count, setCount] = createSignal(0);
+const Logo = () => (
+  <div class="flex items-center gap-2">
+    <div class="h-8 w-8 flex items-center justify-center rounded-lg from-accent to-nostr bg-gradient-to-br">
+      <div class="i-lucide-audio-lines text-lg text-bg" />
+    </div>
+    <span class="text-xl font-bold tracking-tight">Nowstr</span>
+  </div>
+);
+
+const App = () => {
+  // Playback Store → MusicStatusController。Spotify と Nostr はここでだけ接続する。
+  // Nostr 未接続・投稿オフのときは null を渡す（掲示中なら clear される）。
+  createEffect(() => {
+    statusController.update(settings.statusEnabled && canPublishStatus() ? playback() : null);
+  });
+
+  onMount(() => {
+    void initSpotify();
+    void initNostr();
+  });
 
   return (
-    <>
-      <section id="center">
-        <div class="hero">
-          <img src={heroImg} class="base" width="170" height="179" alt="" />
-          <img src={solidLogo} class="framework" alt="Solid logo" />
-          <img src={viteLogo} class="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button type="button" class="counter" onClick={() => setCount((count) => count + 1)}>
-          Count is {count()}
-        </button>
-      </section>
+    <div class="min-h-screen bg-bg text-fg">
+      <div class="mx-auto max-w-5xl flex flex-col gap-6 p-6">
+        <header class="flex items-center justify-between">
+          <Logo />
+          <SettingsDialog />
+        </header>
 
-      <div class="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg class="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img class="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://solidjs.com/" target="_blank">
-                <img class="button-icon" src={solidLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg class="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg class="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg class="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg class="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg class="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div class="ticks"></div>
-      <section id="spacer"></section>
-    </>
+        <Show
+          when={spotify.loggedIn}
+          fallback={
+            <main class="mx-auto max-w-md w-full flex flex-col gap-6 pt-12">
+              <div class="text-center">
+                <p class="text-2xl font-bold">ブラウザで聴いている曲を、Nostr に。</p>
+                <p class="mt-2 text-sm text-muted">
+                  Spotify を再生し、いま聴いている曲を NIP-38 music status
+                  として自動で掲示する小さなプレイヤーです。
+                </p>
+              </div>
+              <ConnectionPanel />
+            </main>
+          }
+        >
+          <main class="grid gap-6 md:(grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start)">
+            <NowPlaying />
+            <div class="flex flex-col gap-6 md:(sticky top-6 max-h-[calc(100vh-3rem)])">
+              <ConnectionPanel />
+              <PlaylistPicker />
+            </div>
+          </main>
+        </Show>
+      </div>
+      <Toaster />
+    </div>
   );
-}
+};
 
 export default App;

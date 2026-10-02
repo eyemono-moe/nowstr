@@ -184,6 +184,9 @@ importers:
       '@rx-nostr/crypto':
         specifier: ^3.1.6
         version: 3.1.6(rx-nostr@3.7.7)
+      '@scure/base':
+        specifier: ^2.4.0
+        version: 2.4.0
       rx-nostr:
         specifier: ^3.7.7
         version: 3.7.7
