@@ -17,20 +17,41 @@ type Nip07 = {
   signEvent(event: EventTemplate): Promise<SignedEvent>;
 };
 
-const nip07 = (): Nip07 | undefined => (window as { nostr?: Nip07 }).nostr;
+const isNip07 = (value: unknown): value is Nip07 =>
+  typeof value === "object" &&
+  value !== null &&
+  typeof (value as Partial<Nip07>).getPublicKey === "function" &&
+  typeof (value as Partial<Nip07>).signEvent === "function";
+
+const nip07 = (): Nip07 | undefined => {
+  const value = (window as { nostr?: unknown }).nostr;
+  return isNip07(value) ? value : undefined;
+};
+
+export const hasNip07 = (): boolean => nip07() !== undefined;
 
 /**
- * NIP-07 拡張は content script として注入されるため、ページ読み込み直後は未定義のことがある。
- * 少しだけ待ってから判定する。
+ * `window.nostr` が使えるようになるまで待つ。`timeoutMs` 以内に現れなければ false。
+ *
+ * NIP-07 拡張は content script として非同期に `window.nostr` を注入するため、
+ * ページ読み込み直後は未定義のことがある（拡張や PC の負荷によっては数秒かかる）。
  */
-export const waitForNip07 = async (timeoutMs = 1500): Promise<boolean> => {
-  const deadline = Date.now() + timeoutMs;
-  while (!nip07()) {
-    if (Date.now() > deadline) return false;
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-  return true;
-};
+export const waitForNip07 = (timeoutMs: number, signal?: AbortSignal): Promise<boolean> =>
+  new Promise((resolve) => {
+    if (hasNip07()) return resolve(true);
+    const startedAt = Date.now();
+    const timer = setInterval(() => {
+      if (hasNip07()) finish(true);
+      else if (Date.now() - startedAt >= timeoutMs) finish(false);
+    }, 100);
+    const finish = (found: boolean) => {
+      clearInterval(timer);
+      signal?.removeEventListener("abort", onAbort);
+      resolve(found);
+    };
+    const onAbort = () => finish(hasNip07());
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
 
 export const createNip07Signer = (): NostrSigner => {
   const get = (): Nip07 => {

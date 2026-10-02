@@ -3,7 +3,7 @@ import type { EventTemplate } from "../core/nip38";
 import { normalizeRelayUrl } from "../core/relay-list";
 import { AppError } from "../lib/errors";
 import { NostrRelayClient } from "../nostr/publisher";
-import { createNip07Signer, type NostrSigner, waitForNip07 } from "../nostr/signer";
+import { createNip07Signer, hasNip07, type NostrSigner, waitForNip07 } from "../nostr/signer";
 import { MusicStatusController, type StatusSnapshot } from "../status/music-status-controller";
 import { RELAY_LIST_INDEXERS, settings, updateSettings } from "./settings";
 import { notifyError } from "./toast";
@@ -14,7 +14,10 @@ import { notifyError } from "./toast";
  */
 
 type NostrStore = {
-  /** NIP-07 拡張の有無。判定前は null */
+  /**
+   * NIP-07 拡張の有無。判定中は null。
+   * false でも後から注入される可能性があるため、確定ではなく「現時点で見つからない」の意味。
+   */
   nip07Available: boolean | null;
   pubkey: string | null;
   connecting: boolean;
@@ -80,25 +83,49 @@ const resolveRelays = async (pubkey: string) => {
   else setStore({ relays: fallback, relaySource: "fallback" });
 };
 
+/** 起動時に「見つからない」と表示するまでの待ち時間 */
+const INITIAL_DETECT_MS = 2_000;
+/** その後もバックグラウンドで注入を待ち続ける時間 */
+const BACKGROUND_DETECT_MS = 30_000;
+/** ログインボタンを押したときに待つ時間 */
+const LOGIN_DETECT_MS = 3_000;
+
+/** 起動後に遅れて注入された / ウィンドウ復帰時に見つかった拡張を拾う */
+const watchNip07 = () => {
+  const found = () => {
+    setStore({ nip07Available: true });
+    window.removeEventListener("focus", onFocus);
+    if (settings.nostrAutoConnect && !store.pubkey && !store.connecting) void loginNostr();
+  };
+  const onFocus = () => hasNip07() && found();
+  window.addEventListener("focus", onFocus);
+  void waitForNip07(BACKGROUND_DETECT_MS).then((ok) => ok && !store.nip07Available && found());
+};
+
 export const initNostr = async (): Promise<void> => {
-  const available = await waitForNip07();
+  const available = await waitForNip07(INITIAL_DETECT_MS);
   setStore({ nip07Available: available });
-  if (available && settings.nostrAutoConnect) await loginNostr();
+  if (!available) {
+    watchNip07();
+    return;
+  }
+  if (settings.nostrAutoConnect) await loginNostr();
 };
 
 export const loginNostr = async (): Promise<void> => {
-  if (!(await waitForNip07(0))) {
-    setStore({ nip07Available: false });
+  setStore({ connecting: true });
+  if (!(await waitForNip07(LOGIN_DETECT_MS))) {
+    setStore({ connecting: false, nip07Available: false });
     notifyError(
       new AppError(
         "nip07_unavailable",
-        "NIP-07 対応のブラウザ拡張（nos2x, Alby など）をインストールしてください。",
+        "NIP-07 対応のブラウザ拡張（nos2x, Alby など）が見つかりません。拡張を有効にしてからページを再読み込みしてください。",
       ),
       "Nostr",
     );
     return;
   }
-  setStore({ connecting: true, nip07Available: true });
+  setStore({ nip07Available: true });
   try {
     signer = createNip07Signer();
     const pubkey = await signer.getPublicKey();

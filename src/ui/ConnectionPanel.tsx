@@ -54,6 +54,7 @@ const NostrRow = () => (
         <Switch fallback="未接続">
           <Match when={nostr.connecting}>接続中…</Match>
           <Match when={nostr.pubkey}>{(pubkey) => shortenNpub(toNpub(pubkey()))}</Match>
+          <Match when={nostr.nip07Available === null}>拡張を確認中…</Match>
           <Match when={nostr.nip07Available === false}>NIP-07 拡張が見つかりません</Match>
         </Switch>
       </span>
@@ -64,7 +65,7 @@ const NostrRow = () => (
         <button
           type="button"
           class="btn px-3 py-1.5 text-sm bg-nostr text-white hover:brightness-110"
-          disabled={nostr.connecting || nostr.nip07Available === false}
+          disabled={nostr.connecting}
           title={
             nostr.nip07Available === false
               ? "nos2x や Alby などの NIP-07 拡張が必要です"
