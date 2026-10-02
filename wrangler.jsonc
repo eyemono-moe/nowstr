@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nowstr",
+  "compatibility_date": "2026-10-01",
+  // バックエンドは持たず、ビルド済み SPA を静的アセットとして配信するだけ。
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+  },
+}
