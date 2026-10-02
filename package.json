@@ -2,6 +2,12 @@
   "name": "nowstr",
   "version": "0.0.0",
   "private": true,
+  "description": "Spotify で再生中の曲を Nostr の music status (NIP-38) として自動で設定するウェブページ",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eyemono-moe/nowstr.git"
+  },
   "type": "module",
   "dependencies": {
     "@ark-ui/solid": "^5.39.2",

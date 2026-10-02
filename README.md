@@ -190,3 +190,9 @@ src/
 
 - `nowstr:spotify:token` — Spotify のアクセストークン / リフレッシュトークン
 - `nowstr:settings` — status 投稿の ON/OFF、fallback relay、Nostr の自動再接続フラグ
+
+## ライセンス
+
+[MIT](./LICENSE)
+
+`src/assets/spotify-full-logo-white.svg` は Spotify の商標であり、MIT ライセンスの対象外です。[Spotify Design Guidelines](https://developer.spotify.com/documentation/design) に従った帰属表示のためにのみ使用しています。
