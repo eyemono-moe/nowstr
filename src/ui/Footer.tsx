@@ -1,11 +1,10 @@
 import { SOURCE_URL, SPOTIFY_APPS_URL } from "../lib/links";
+import { PrivacyDialog } from "./PrivacyDialog";
 
 export const Footer = () => (
   <footer class="flex flex-col items-center gap-2 pt-4 text-xs text-muted">
     <nav class="flex flex-wrap justify-center gap-x-4 gap-y-1">
-      <a href="/privacy" class="link">
-        プライバシーポリシー
-      </a>
+      <PrivacyDialog />
       <a href={SPOTIFY_APPS_URL} target="_blank" rel="noopener noreferrer" class="link">
         Spotify との連携を解除
       </a>

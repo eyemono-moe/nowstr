@@ -1,11 +1,11 @@
 # Nowstr
 
-ブラウザを Spotify の再生デバイスにして、**そのブラウザで再生している曲**を Nostr の music status（[NIP-38](https://github.com/nostr-protocol/nips/blob/master/38.md)）として自動で掲示する、ミニマルなウェブアプリです。
+Spotify で再生中の曲を、Nostr のステータス（[NIP-38](https://github.com/nostr-protocol/nips/blob/master/38.md) の music status）として自動で設定する、1枚だけのウェブページです。
 
 - Nowstr のタブを開いておくと、Spotify アプリのデバイス一覧に「Nowstr」が表示されます
 - 再生操作・プレイリストの選択などは、いつもどおり **Spotify 公式アプリ**から行います
 - Nowstr デバイスで再生した曲の開始・変更・一時停止・再開に合わせて、`kind:30315` / `d=music` の status を publish / clear します
-- バックエンドなしの SPA です（Cloudflare Workers の静的アセットとして配信）
+- バックエンドなしの静的な1ページです（`dist/` をそのまま配信できます）
 
 > [!IMPORTANT]
 > Nowstr は **各自が自分の Spotify Developer App を作り、自分でホスティングして使う**ことを前提にしています。
@@ -25,11 +25,21 @@
 
 ## 使い方
 
-1. Nowstr を開き、Spotify と Nostr（NIP-07）にログインする
-2. 「このブラウザで再生」を押す（ブラウザの自動再生制限を解除するため、最初の1回はこのボタンが必要です）
-3. あとは Spotify 公式アプリで普通に操作する。デバイスが「Nowstr」になっている間、再生中の曲が music status に掲示されます
+ページの「はじめかた」に沿って進めます。
 
-Nowstr のタブを閉じる・他のデバイスに再生を移す・一時停止すると status は消えます。ブラウザの強制終了などで消せなかった場合も、曲の終了予定時刻（NIP-40 `expiration`）に自然に失効します。
+1. **Spotify にログイン**
+2. **Nostr にログイン**（NIP-07 拡張を使います）
+3. **連携をはじめる** を押す — Spotify で再生中の曲が、このタブで流れはじめます
+
+あとは Spotify 公式アプリで普通に操作するだけです。
+
+- 連携中は、音が Nowstr のタブから流れます。曲の操作（再生・一時停止・曲送り・音量など）は Spotify アプリで行えます。
+- このタブを開いている間、再生中の曲が Nostr のステータスに表示されます。一時停止したりタブを閉じたりすると、ステータスは消えます。ブラウザの強制終了などで消せなかった場合も、曲の終了予定時刻（NIP-40 `expiration`）に自然に失効します。
+- Spotify アプリで再生先を別の端末に切り替えると、連携は止まります。再開するときは、Spotify アプリの再生先の一覧から「Nowstr」を選ぶか、③ のボタンをもう一度押してください。
+
+> [!NOTE]
+> 仕組みとしては、Nowstr のタブが Spotify Connect の再生デバイス（Web Playback SDK）になり、③ のボタンで再生をそのデバイスへ移しています。
+> ブラウザの自動再生制限を解除するため、ページを開くたびに最初の1回はタブ内でボタンを押す必要があります。
 
 ### 常駐させるときのヒント
 
@@ -48,13 +58,13 @@ Nowstr のタブを閉じる・他のデバイスに再生を移す・一時停�
    - **Which API/SDKs are you planning to use?**: **Web API** と **Web Playback SDK**
 3. 利用規約に同意して **Save** し、**Settings** から **Client ID** をコピーする（Client Secret は使いません）
 
-Nowstr のコールバックパスは `/callback` です。
+ログイン後はサイトのトップ（`/`）に戻ってきます。
 
-| 環境                      | Redirect URI                          |
-| ------------------------- | ------------------------------------- |
-| 開発 (`vp dev`)           | `https://127.0.0.1:5173/callback`     |
-| プレビュー (`vp preview`) | `https://127.0.0.1:4173/callback`     |
-| 本番                      | `https://<あなたのドメイン>/callback` |
+| 環境                      | Redirect URI                  |
+| ------------------------- | ----------------------------- |
+| 開発 (`vp dev`)           | `https://127.0.0.1:5173/`     |
+| プレビュー (`vp preview`) | `https://127.0.0.1:4173/`     |
+| 本番                      | `https://<あなたのドメイン>/` |
 
 > [!NOTE]
 > 開発サーバーは **`https://127.0.0.1:5173/`**（自己署名証明書の HTTPS）で起動します。初回は証明書の警告が出るので、「詳細設定」から続行してください。
@@ -77,13 +87,13 @@ Nowstr のコールバックパスは `/callback` です。
 | 変数                        | 必須 | 説明                                                                              |
 | --------------------------- | ---- | --------------------------------------------------------------------------------- |
 | `VITE_SPOTIFY_CLIENT_ID`    | ✓    | 自分の Spotify Developer App の Client ID                                         |
-| `VITE_SPOTIFY_REDIRECT_URI` |      | Redirect URI を固定したい場合のみ（既定: `${location.origin}/callback`）          |
+| `VITE_SPOTIFY_REDIRECT_URI` |      | Redirect URI を固定したい場合のみ（既定: `${location.origin}/`）                  |
 | `VITE_SOURCE_URL`           |      | フッターに表示するソースコードの URL                                              |
 | `VITE_CONTACT_URL`          |      | プライバシーポリシーに表示する問い合わせ先（URL / `mailto:`）。既定はソースの URL |
 
 ### 3. ビルド・デプロイする
 
-Cloudflare Workers の静的アセット（[Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/)）として配信する設定が `wrangler.jsonc` に入っています。`name` と `routes`（カスタムドメイン）は自分の環境に合わせて書き換えてください。`dist/` を配信できれば、他の静的ホスティングでも動きます（全パスで `index.html` を返す SPA 設定が必要です）。
+Cloudflare Workers の静的アセット（[Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/)）として配信する設定が `wrangler.jsonc` に入っています。`name` と `routes`（カスタムドメイン）は自分の環境に合わせて書き換えてください。ページは1枚だけでルーティングもないので、`dist/` をそのまま置ける静的ホスティングならどこでも動きます。
 
 ```sh
 vp install
@@ -91,7 +101,7 @@ pnpm exec wrangler login   # 初回のみ
 vp run deploy              # vp build && wrangler deploy
 ```
 
-デプロイ後、本番 URL の `/callback` を Spotify App の Redirect URI に追加してください。
+デプロイ後、本番 URL（`https://<あなたのドメイン>/`）を Spotify App の Redirect URI に追加してください。
 
 ## Spotify の規約について
 
@@ -102,7 +112,7 @@ Nowstr を公開・利用するうえで関係する [Spotify Developer Terms](h
 - **帰属表示とリンク**（Developer Policy II / Design Guidelines）
   曲のメタデータやアートワークを表示する箇所には、Spotify の公式ロゴ（`src/assets/spotify-full-logo-white.svg`、[公式配布物](https://developer.spotify.com/documentation/design)）と Spotify へのリンク（OPEN SPOTIFY）を表示しています。アートワークは加工・トリミングしません。Nowstr 自身のロゴや配色は Spotify のブランド要素（Spotify Green など）と紛らわしくならないようにしています。
 - **プライバシーポリシーと連携解除手段**（Developer Policy I）
-  `/privacy` にプライバシーポリシーを用意し、フッターから Spotify 連携の解除方法へリンクしています。
+  フッターからプライバシーポリシー（ダイアログ。`/#privacy` で直接開けます）と Spotify 連携の解除方法へリンクしています。
 - **非商用・個人利用**
   Developer Terms のライセンスは private personal use の範囲です。広告・課金などの商用利用はできません。
 - **他サービスへのデータ送信（グレーゾーン）**

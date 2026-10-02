@@ -1,16 +1,16 @@
 import { createEffect, onMount, Show } from "solid-js";
 import { canPublishStatus, initNostr, statusController } from "./state/nostr";
 import { settings } from "./state/settings";
-import { initSpotify, playback, spotify } from "./state/spotify";
-import { ConnectionPanel } from "./ui/ConnectionPanel";
+import { initSpotify, playback } from "./state/spotify";
 import { Footer } from "./ui/Footer";
 import { Logo } from "./ui/Logo";
 import { NowPlaying } from "./ui/NowPlaying";
 import { SettingsDialog } from "./ui/SettingsDialog";
+import { SetupSteps } from "./ui/SetupSteps";
 import { Toaster } from "./ui/Toaster";
 
 /**
- * Nowstr はこのブラウザを Spotify Connect デバイスにして、再生中の曲を Nostr に掲示するだけの小さなページ。
+ * Nowstr はこのブラウザを Spotify Connect デバイスにして、再生中の曲を Nostr に掲示するだけの1枚のページ。
  * 再生操作やプレイリストの選択は Spotify 公式アプリから行う。
  */
 const App = () => {
@@ -32,17 +32,18 @@ const App = () => {
           <Logo />
           <SettingsDialog />
         </header>
-        <Show when={!spotify.loggedIn}>
-          <div class="pt-6 text-center">
-            <p class="text-xl font-bold">いま聴いている曲を、Nostr に。</p>
-            <p class="mt-2 text-sm text-muted leading-relaxed">
-              このブラウザを Spotify の再生デバイスにして、再生中の曲を NIP-38 music status
-              として自動で掲示します。
-            </p>
-          </div>
-        </Show>
-        <ConnectionPanel />
-        <Show when={spotify.loggedIn}>
+        <div class="flex flex-col gap-2">
+          <p class="text-xl font-bold">いま聴いている曲を、Nostr に。</p>
+          <p class="text-sm leading-relaxed">
+            このページで Spotify と Nostr にログインすると、Spotify で再生中の曲を Nostr
+            のステータスとして自動で設定できます。
+          </p>
+          <p class="text-xs text-muted leading-relaxed">
+            ステータスは NIP-38 の music status（kind:30315、d タグ "music"）として投稿されます。
+          </p>
+        </div>
+        <SetupSteps />
+        <Show when={playback()}>
           <NowPlaying />
         </Show>
         <Footer />

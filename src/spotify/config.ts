@@ -1,8 +1,11 @@
 export const SPOTIFY_CLIENT_ID: string = import.meta.env.VITE_SPOTIFY_CLIENT_ID ?? "";
 
-/** Spotify Developer Dashboard に登録する Redirect URI と一致させること */
+/**
+ * Spotify Developer Dashboard に登録する Redirect URI と一致させること。
+ * ページは1枚だけなので、サイトのトップ（`/`）に戻ってきてもらう。
+ */
 export const spotifyRedirectUri = (): string =>
-  import.meta.env.VITE_SPOTIFY_REDIRECT_URI || `${location.origin}/callback`;
+  import.meta.env.VITE_SPOTIFY_REDIRECT_URI || `${location.origin}/`;
 
 /**
  * 必要最小限の scope。

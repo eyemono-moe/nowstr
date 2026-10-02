@@ -5,9 +5,8 @@
   "routes": [{ "pattern": "nowstr.eyemono.moe", "custom_domain": true }],
   // *.workers.dev は使わず、カスタムドメインだけで配信する
   "workers_dev": false,
-  // バックエンドは持たず、ビルド済み SPA を静的アセットとして配信するだけ。
+  // バックエンドは持たず、ビルド済みの1ページを静的アセットとして配信するだけ。
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application",
   },
 }
