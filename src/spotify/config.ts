@@ -7,15 +7,11 @@ export const spotifyRedirectUri = (): string =>
 /**
  * 必要最小限の scope。
  * - streaming / user-read-email / user-read-private: Web Playback SDK の要件
- * - user-read-playback-state / user-modify-playback-state: 再生デバイスの transfer と再生開始
- * - playlist-read-private / playlist-read-collaborative: プレイリスト一覧
+ * - user-modify-playback-state: 再生をこのブラウザ（Nowstr デバイス）へ移す
  */
 export const SPOTIFY_SCOPES = [
   "streaming",
   "user-read-email",
   "user-read-private",
-  "user-read-playback-state",
   "user-modify-playback-state",
-  "playlist-read-private",
-  "playlist-read-collaborative",
 ] as const;

@@ -14,9 +14,7 @@ export type AppErrorCode =
   | "nip07_unavailable"
   | "nip07_rejected"
   | "relay_connection_failed"
-  | "relay_publish_failed"
-  | "pip_unsupported"
-  | "pip_failed";
+  | "relay_publish_failed";
 
 export class AppError extends Error {
   override readonly name = "AppError";

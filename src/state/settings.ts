@@ -7,7 +7,6 @@ export const DEFAULT_FALLBACK_RELAYS = ["wss://relay.damus.io", "wss://nos.lol",
 export const RELAY_LIST_INDEXERS = ["wss://purplepag.es", "wss://directory.yabu.me"];
 
 export type Settings = {
-  volume: number;
   /** music status を投稿するか */
   statusEnabled: boolean;
   /** NIP-65 relay list が見つからないときに使う relay */
@@ -19,7 +18,6 @@ export type Settings = {
 const KEY = "nowstr:settings";
 
 const defaults: Settings = {
-  volume: 0.5,
   statusEnabled: true,
   fallbackRelays: DEFAULT_FALLBACK_RELAYS,
   nostrAutoConnect: false,

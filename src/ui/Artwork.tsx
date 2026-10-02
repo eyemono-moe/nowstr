@@ -10,7 +10,7 @@ export const Artwork = (props: { src: string | null | undefined; alt: string; cl
         </div>
       }
     >
-      {(src) => <img src={src()} alt={props.alt} class="h-full w-full object-cover" />}
+      {(src) => <img src={src()} alt={props.alt} class="h-full w-full object-contain" />}
     </Show>
   </div>
 );

@@ -29,29 +29,3 @@ button {
   color: inherit;
   font: inherit;
 }
-
-/* Marquee: 収まらないテキストを左右に往復させる（端で少し止まる） */
-@keyframes nowstr-marquee {
-  0%,
-  20% {
-    transform: translateX(0);
-  }
-  80%,
-  100% {
-    transform: translateX(var(--marquee-distance));
-  }
-}
-
-.nowstr-marquee {
-  animation: nowstr-marquee var(--marquee-duration) ease-in-out infinite alternate;
-}
-
-.nowstr-marquee:hover {
-  animation-play-state: paused;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .nowstr-marquee {
-    animation: none;
-  }
-}

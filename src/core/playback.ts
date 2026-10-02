@@ -24,9 +24,3 @@ export type PlaybackState = {
 
 export const isSameTrack = (a: Track | null, b: Track | null): boolean =>
   a === null || b === null ? a === b : a.uri === b.uri;
-
-/** 観測時刻からの経過時間を加味した現在の再生位置 */
-export const currentPositionMs = (state: PlaybackState, now: number): number => {
-  const elapsed = state.paused ? 0 : Math.max(0, now - state.updatedAt);
-  return Math.min(state.positionMs + elapsed, state.durationMs);
-};

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { currentPositionMs, isSameTrack, type PlaybackState, type Track } from "./playback";
+import { isSameTrack, type Track } from "./playback";
 
 const track = (uri: string, overrides: Partial<Track> = {}): Track => ({
   uri,
@@ -26,27 +26,5 @@ describe("isSameTrack", () => {
     expect(isSameTrack(null, null)).toBe(true);
     expect(isSameTrack(track("spotify:track:a"), null)).toBe(false);
     expect(isSameTrack(null, track("spotify:track:a"))).toBe(false);
-  });
-});
-
-describe("currentPositionMs", () => {
-  const base: PlaybackState = {
-    track: track("spotify:track:a"),
-    paused: false,
-    positionMs: 10_000,
-    durationMs: 200_000,
-    updatedAt: 1_000_000,
-  };
-
-  it("再生中は経過時間を加算する", () => {
-    expect(currentPositionMs(base, 1_005_000)).toBe(15_000);
-  });
-
-  it("一時停止中は位置を進めない", () => {
-    expect(currentPositionMs({ ...base, paused: true }, 1_005_000)).toBe(10_000);
-  });
-
-  it("duration を超えない", () => {
-    expect(currentPositionMs(base, 2_000_000)).toBe(200_000);
   });
 });

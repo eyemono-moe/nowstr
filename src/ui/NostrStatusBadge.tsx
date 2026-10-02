@@ -29,7 +29,7 @@ export const NostrStatusBadge = (props: { compact?: boolean }) => {
       case "error":
         return { label: "Error", color: "bg-danger", title: "送信に失敗しました" };
       default:
-        return { label: "Ready", color: "bg-nostr", title: "再生すると status を投稿します" };
+        return { label: "Ready", color: "bg-sky-400", title: "再生すると status を投稿します" };
     }
   };
 

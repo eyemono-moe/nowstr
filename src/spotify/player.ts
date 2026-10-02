@@ -43,28 +43,27 @@ export type SpotifyPlayerEvents = {
   onError: (error: AppError) => void;
 };
 
+/**
+ * Nowstr 側からは再生操作をしない（操作は Spotify 公式アプリから行う）ため、
+ * 接続と autoplay 制限の解除だけを公開する。
+ */
 export type SpotifyPlayer = {
   connect: () => Promise<void>;
   disconnect: () => void;
   /** ブラウザの autoplay 制限対策。ユーザー操作のハンドラ内で同期的に呼ぶ */
   activateElement: () => void;
-  togglePlay: () => Promise<void>;
-  previousTrack: () => Promise<void>;
-  nextTrack: () => Promise<void>;
-  seek: (positionMs: number) => Promise<void>;
-  setVolume: (volume: number) => Promise<void>;
 };
 
 export const createSpotifyPlayer = async (
   name: string,
-  initialVolume: number,
   events: SpotifyPlayerEvents,
 ): Promise<SpotifyPlayer> => {
   await loadSdk();
 
   const player = new window.Spotify.Player({
     name,
-    volume: initialVolume,
+    // 音量は Spotify 公式アプリ（Spotify Connect）から調整する
+    volume: 0.5,
     // OS のメディアキーやロック画面の操作に対応させる
     enableMediaSession: true,
     getOAuthToken: (callback) => {
@@ -116,7 +115,7 @@ export const createSpotifyPlayer = async (
     events.onError(
       new AppError(
         "spotify_playback_error",
-        "ブラウザの自動再生制限により再生できませんでした。再生ボタンを押してください。",
+        "ブラウザの自動再生制限により再生できませんでした。Nowstr のページで「このブラウザで再生」を押してください。",
       ),
     ),
   );
@@ -132,10 +131,5 @@ export const createSpotifyPlayer = async (
     },
     disconnect: () => player.disconnect(),
     activateElement: () => void player.activateElement(),
-    togglePlay: () => player.togglePlay(),
-    previousTrack: () => player.previousTrack(),
-    nextTrack: () => player.nextTrack(),
-    seek: (positionMs) => player.seek(positionMs),
-    setVolume: (volume) => player.setVolume(volume),
   };
 };

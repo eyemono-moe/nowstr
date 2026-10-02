@@ -13,7 +13,7 @@ const SpotifyRow = () => (
   <div class="flex items-center justify-between gap-3">
     <div class="min-w-0 flex items-center gap-2">
       <Dot ok={spotify.player === "ready"} warn={spotify.loggedIn && spotify.player !== "ready"} />
-      <div class="i-lucide-music-2 text-accent" />
+      <div class="i-lucide-music-2 text-muted" />
       <span class="text-sm font-medium">Spotify</span>
       <span class="truncate text-xs text-muted">
         <Switch fallback="未ログイン">
