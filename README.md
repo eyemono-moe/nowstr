@@ -119,6 +119,13 @@ Nowstr を公開・利用するうえで関係する [Spotify Developer Terms](h
 - **他サービスへのデータ送信（グレーゾーン）**
   Developer Policy III は「ユーザー自身の個人データの移行」を除き、他サービスへのデータ転送を可能にするアプリを禁止しています。Nowstr は「ユーザー本人が、自分の再生状況を、自分の意思で Nostr に掲示する」ものですが、送信内容には Spotify のメタデータ（曲名・アーティスト名）が含まれます。Spotify がこれをどう解釈するかは明らかではなく、最悪の場合は自分の App（Client ID）が停止される可能性があることを理解したうえで使ってください。
 
+## セキュリティ
+
+- Spotify のトークンは `localStorage` に保存しています。バックエンドを持たない SPA ではどの保存先でも XSS に対する強さは変わらず、Web Playback SDK も JavaScript からアクセストークンを受け取るため、この方式を採っています。scope は最小限（SDK の要件 + `user-modify-playback-state`）です。
+- 代わりに `public/_headers` で **Content-Security-Policy** を設定し、スクリプトの読み込み元を自サイトと `sdk.scdn.co` に、通信先を Spotify の API / 認可サーバーと Nostr relay（`wss:`）に制限しています。万一スクリプトが混入しても、任意のサーバーへトークンを送りにくくするためです。そのため rx-nostr の NIP-11 取得（relay ごとの `https:` 通信）は無効にしています。
+- `_headers` は Cloudflare Workers / Pages と Netlify で使える形式です。他のホスティングで配信する場合は、同じヘッダーを設定してください。
+- トークンを消すにはログアウトしてください。Spotify 側での取り消しは [アカウントページ](https://www.spotify.com/account/apps/) から行えます。
+
 ## 開発
 
 ```sh

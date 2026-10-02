@@ -24,6 +24,9 @@ export class NostrRelayClient {
     verifier,
     okTimeout: 10_000,
     eoseTimeout: 5_000,
+    // NIP-11 は relay ごとに https で取得するため、CSP の connect-src を絞れなくなる。
+    // 使うのは小さな REQ / EVENT だけなので取得しない。
+    skipFetchNip11: true,
   });
 
   /** NIP-65 の relay list (kind:10002) から write relay を取得する。見つからなければ null */
