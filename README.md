@@ -42,11 +42,11 @@ Spotify の楽曲をブラウザで再生し、**いまこのブラウザで再�
 
 Nowstr のコールバックパスは `/callback` です。
 
-| 環境                      | Redirect URI                              |
-| ------------------------- | ----------------------------------------- |
-| 開発 (`vp dev`)           | `https://127.0.0.1:5173/callback`         |
-| プレビュー (`vp preview`) | `https://127.0.0.1:4173/callback`         |
-| 本番 (Cloudflare Workers) | `https://<デプロイ先のドメイン>/callback` |
+| 環境                      | Redirect URI                          |
+| ------------------------- | ------------------------------------- |
+| 開発 (`vp dev`)           | `https://127.0.0.1:5173/callback`     |
+| プレビュー (`vp preview`) | `https://127.0.0.1:4173/callback`     |
+| 本番 (Cloudflare Workers) | `https://nowstr.eyemono.moe/callback` |
 
 > [!IMPORTANT]
 > 開発サーバーは **`https://127.0.0.1:5173/`**（自己署名証明書の HTTPS）で起動します。ブラウザもこの URL で開いてください。初回は証明書の警告が出るので、「詳細設定」から続行してください。

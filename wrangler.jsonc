@@ -2,6 +2,9 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "nowstr",
   "compatibility_date": "2026-10-01",
+  "routes": [{ "pattern": "nowstr.eyemono.moe", "custom_domain": true }],
+  // *.workers.dev は使わず、カスタムドメインだけで配信する
+  "workers_dev": false,
   // バックエンドは持たず、ビルド済み SPA を静的アセットとして配信するだけ。
   "assets": {
     "directory": "./dist",
