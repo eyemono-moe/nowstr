@@ -23,6 +23,22 @@ describe("buildMusicStatusEvent", () => {
       ],
     });
   });
+
+  it("リンクを出さない曲では r タグを付けない", () => {
+    const event = buildMusicStatusEvent(
+      {
+        trackUri: "https://music.youtube.com/watch?v=abc",
+        url: null,
+        content: "Intergalactic - Beastie Boys",
+        expiresAt: 1_692_845_589,
+      },
+      1_692_845_400,
+    );
+    expect(event.tags).toEqual([
+      ["d", "music"],
+      ["expiration", "1692845589"],
+    ]);
+  });
 });
 
 describe("buildClearMusicStatusEvent", () => {

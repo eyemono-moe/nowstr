@@ -64,6 +64,13 @@ describe("desiredMusicStatus", () => {
     expect(desiredMusicStatus(playing({ track: { ...trackA, uri: local } }))?.url).toBe(local);
   });
 
+  it("限定公開・非公開の動画はリンクを出さない", () => {
+    const track = { ...trackA, uri: "https://music.youtube.com/watch?v=abc", unlisted: true };
+    const status = desiredMusicStatus(playing({ track }));
+    expect(status?.url).toBeNull();
+    expect(status?.trackUri).toBe("https://music.youtube.com/watch?v=abc");
+  });
+
   it("複数アーティストはカンマで連結する", () => {
     const state = playing({ track: { ...trackA, artists: ["A", "B"] } });
     expect(desiredMusicStatus(state)?.content).toBe("Intergalactic - A, B");
@@ -108,6 +115,11 @@ describe("decideStatusAction", () => {
 
   it("seek やリピートで終了予想が大きくずれたら publish し直す", () => {
     const desired = desiredMusicStatus(playing({ positionMs: 0 }));
+    expect(decideStatusAction(published, desired)).toEqual({ type: "publish", status: desired });
+  });
+
+  it("同じ曲でリンクの有無が変わったら publish し直す（限定公開と後から分かった場合）", () => {
+    const desired = desiredMusicStatus(playing({ track: { ...trackA, unlisted: true } }));
     expect(decideStatusAction(published, desired)).toEqual({ type: "publish", status: desired });
   });
 

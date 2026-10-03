@@ -19,7 +19,7 @@ export const NowPlaying = () => {
     <section class="card flex flex-col gap-4">
       <Show when={track()} fallback={<p class="text-sm text-muted">再生中の曲はありません</p>}>
         {(t) => {
-          const url = () => (isSpotify() ? spotifyWebUrl(t().uri) : t().uri);
+          const url = () => (t().unlisted ? null : isSpotify() ? spotifyWebUrl(t().uri) : t().uri);
           return (
             <>
               <Show

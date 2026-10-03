@@ -5,6 +5,7 @@
 // - 再生中か・再生位置・長さ: ページ内の <video> 要素
 // - 動画 ID: プレイヤーの getVideoData()（youtube-music-main.js が <html data-nowstr-video-id> に書く）。
 //   取れなければ URL の ?v= やアートワークの URL から探す。ホームやプレイリストのページで再生していても動く
+// - 限定公開・非公開か: これもプレイヤーから（<html data-nowstr-video-listed>）。該当すればリンクを出さない
 //
 // 読み取った情報は拡張の service worker 経由で Nowstr のタブにだけ渡し、どこにも保存しない。
 
@@ -55,27 +56,39 @@
     return null;
   };
 
-  /**
-   * プレイヤーから確実に分かった ID を、曲（曲名＋アーティスト）ごとに覚えておく。
-   * ページを移動して一時的に ID が取れなくなっても、同じ曲の URI が変わらない（＝再投稿しない）ようにするため。
-   * @type {Map<string, string>}
-   */
-  const knownIds = new Map();
+  /** @typedef {{ id: string | null, unlisted: boolean }} VideoInfo */
 
-  /** @param {MediaMetadata} metadata */
-  const videoId = (metadata) => {
+  /**
+   * プレイヤーから確実に分かった ID と公開範囲を、曲（曲名＋アーティスト）ごとに覚えておく。
+   * ページを移動して一時的に取れなくなっても、同じ曲の URI やリンクの有無が変わらない（＝再投稿しない）ようにするため。
+   * @type {Map<string, VideoInfo>}
+   */
+  const knownVideos = new Map();
+
+  /**
+   * @param {MediaMetadata} metadata
+   * @returns {VideoInfo}
+   */
+  const videoInfo = (metadata) => {
     const key = `${metadata.title}\n${metadata.artist}`;
     const root = document.documentElement.dataset;
     // プレイヤーの情報は、曲名が mediaSession と一致するときだけ信用する（曲の切り替え直後は古いことがある）
     if (root.nowstrVideoId && root.nowstrVideoTitle === metadata.title) {
-      knownIds.set(key, root.nowstrVideoId);
-      return root.nowstrVideoId;
+      // 公開範囲が分からないときは、これまでどおりリンクを出す
+      const info = { id: root.nowstrVideoId, unlisted: root.nowstrVideoListed === "false" };
+      knownVideos.set(key, info);
+      return info;
     }
     return (
-      knownIds.get(key) ??
-      new URLSearchParams(location.search).get("v") ??
-      idFromHref(document.querySelector("#movie_player a.ytp-title-link")?.getAttribute("href")) ??
-      idFromArtwork(metadata.artwork)
+      knownVideos.get(key) ?? {
+        id:
+          new URLSearchParams(location.search).get("v") ??
+          idFromHref(
+            document.querySelector("#movie_player a.ytp-title-link")?.getAttribute("href"),
+          ) ??
+          idFromArtwork(metadata.artwork),
+        unlisted: false,
+      }
     );
   };
 
@@ -98,7 +111,7 @@
     if (document.querySelector(".ad-showing") || !video || !metadata?.title) return null;
     const durationMs = Number.isFinite(video.duration) ? Math.round(video.duration * 1000) : 0;
     if (durationMs <= 0) return null;
-    const id = videoId(metadata);
+    const { id, unlisted } = videoInfo(metadata);
     const query = `${metadata.title} ${metadata.artist ?? ""}`.trim();
     return {
       track: {
@@ -111,6 +124,8 @@
         album: metadata.album ?? "",
         artworkUrl: largestArtwork(metadata.artwork),
         durationMs,
+        // ID は曲の区別に使うので URI には入れたまま、Nowstr 側でリンクを出さないようにする
+        unlisted,
       },
       paused: video.paused || video.ended,
       positionMs: Math.round(video.currentTime * 1000),
@@ -139,9 +154,14 @@
     const track = state?.track;
     const key =
       state && track
-        ? [track.uri, track.title, track.artists.join(","), state.paused, state.durationMs].join(
-            "|",
-          )
+        ? [
+            track.uri,
+            track.title,
+            track.artists.join(","),
+            track.unlisted,
+            state.paused,
+            state.durationMs,
+          ].join("|")
         : "none";
     const now = Date.now();
     if (key === lastKey && now - lastSentAt < HEARTBEAT_MS && !seeked(lastState, state)) {

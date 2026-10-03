@@ -43,7 +43,7 @@ const isHttpsUrl = (value: unknown): value is string => {
 const parseTrack = (value: unknown): Track | null | undefined => {
   if (value === null) return null;
   if (!isRecord(value)) return undefined;
-  const { uri, title, artists, album, artworkUrl, durationMs } = value;
+  const { uri, title, artists, album, artworkUrl, durationMs, unlisted } = value;
   if (
     !isYouTubeMusicUrl(uri) ||
     typeof title !== "string" ||
@@ -51,11 +51,21 @@ const parseTrack = (value: unknown): Track | null | undefined => {
     !artists.every((artist) => typeof artist === "string") ||
     typeof album !== "string" ||
     !(artworkUrl === null || isHttpsUrl(artworkUrl)) ||
-    !isFiniteNumber(durationMs)
+    !isFiniteNumber(durationMs) ||
+    // 0.1.3 までの拡張は送ってこない
+    !(unlisted === undefined || typeof unlisted === "boolean")
   ) {
     return undefined;
   }
-  return { uri, title, artists, album, artworkUrl, durationMs };
+  return {
+    uri,
+    title,
+    artists,
+    album,
+    artworkUrl,
+    durationMs,
+    ...(unlisted === undefined ? {} : { unlisted }),
+  };
 };
 
 const parseState = (value: unknown): PlaybackState | null | undefined => {

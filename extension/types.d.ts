@@ -7,6 +7,7 @@ type BridgeTrack = {
   album: string;
   artworkUrl: string | null;
   durationMs: number;
+  unlisted: boolean;
 };
 
 type BridgePlaybackState = {

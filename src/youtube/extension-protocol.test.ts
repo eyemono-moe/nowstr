@@ -28,6 +28,23 @@ describe("parseExtensionMessage", () => {
     ).toEqual({ type: "playback", state });
   });
 
+  it("限定公開・非公開かどうかを読む", () => {
+    const state = {
+      track: { ...track, unlisted: true },
+      paused: false,
+      positionMs: 1_000,
+      durationMs: 230_000,
+      updatedAt: 5,
+    };
+    expect(
+      parseExtensionMessage({ [EXTENSION_MESSAGE_TAG]: "extension", type: "playback", state }),
+    ).toEqual({ type: "playback", state });
+    const bad = { ...state, track: { ...track, unlisted: "yes" } };
+    expect(
+      parseExtensionMessage({ [EXTENSION_MESSAGE_TAG]: "extension", type: "playback", state: bad }),
+    ).toBeNull();
+  });
+
   it("再生していなければ state は null", () => {
     expect(
       parseExtensionMessage({

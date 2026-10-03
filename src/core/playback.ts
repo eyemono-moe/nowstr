@@ -10,6 +10,8 @@ export type Track = {
   album: string;
   artworkUrl: string | null;
   durationMs: number;
+  /** YouTube の限定公開・非公開の動画。URL を知った人なら誰でも見られてしまうため、リンクを出さない */
+  unlisted?: boolean;
 };
 
 export type PlaybackState = {

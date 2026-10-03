@@ -5,8 +5,11 @@ import { spotifyWebUrl } from "./spotify-link";
 export type MusicStatus = {
   /** 曲の同一性の判定に使う（Spotify は spotify:track:..., YouTube Music は曲の URL） */
   trackUri: string;
-  /** r タグに入れるリンク。多くのクライアントがリンクとして表示できるよう、可能なら https の URL にする */
-  url: string;
+  /**
+   * r タグに入れるリンク。多くのクライアントがリンクとして表示できるよう、可能なら https の URL にする。
+   * 限定公開・非公開の動画など、リンクを出さない曲では null
+   */
+  url: string | null;
   content: string;
   /** 曲が終わると予想される時刻 (Unix 秒) */
   expiresAt: number;
@@ -35,7 +38,11 @@ export const desiredMusicStatus = (state: PlaybackState | null): MusicStatus | n
   const { track } = state;
   return {
     trackUri: track.uri,
-    url: track.uri.startsWith("spotify:") ? (spotifyWebUrl(track.uri) ?? track.uri) : track.uri,
+    url: track.unlisted
+      ? null
+      : track.uri.startsWith("spotify:")
+        ? (spotifyWebUrl(track.uri) ?? track.uri)
+        : track.uri,
     content: `${track.title} - ${track.artists.join(", ")}`,
     expiresAt: computeExpiration(state),
   };
@@ -46,6 +53,7 @@ export const desiredMusicStatus = (state: PlaybackState | null): MusicStatus | n
  *
  * - 未掲示 → 再生中: publish（再生開始 / resume）
  * - 曲が変わった: publish
+ * - 同じ曲でリンクの有無が変わった（限定公開と後から分かった）: publish
  * - 同じ曲で終了予想が大きくずれた（seek / リピート）: publish
  * - 掲示済み → 停止・切断: clear
  * - 再生位置が進んだだけ: 何もしない
@@ -59,6 +67,7 @@ export const decideStatusAction = (
     published === null ||
     published.trackUri !== desired.trackUri ||
     published.content !== desired.content ||
+    published.url !== desired.url ||
     Math.abs(published.expiresAt - desired.expiresAt) > EXPIRATION_TOLERANCE_SEC
   ) {
     return { type: "publish", status: desired };

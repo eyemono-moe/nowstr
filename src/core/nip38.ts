@@ -15,7 +15,11 @@ export const buildMusicStatusEvent = (status: MusicStatus, createdAt: number): E
   kind: MUSIC_STATUS_KIND,
   created_at: createdAt,
   content: status.content,
-  tags: [MUSIC_D_TAG, ["r", status.url], ["expiration", String(status.expiresAt)]],
+  tags: [
+    MUSIC_D_TAG,
+    ...(status.url ? [["r", status.url]] : []),
+    ["expiration", String(status.expiresAt)],
+  ],
 });
 
 /** NIP-38: content が空文字の status は「status なし」として扱われる */
