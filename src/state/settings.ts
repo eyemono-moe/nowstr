@@ -13,6 +13,8 @@ export type Settings = {
   statusEnabled: boolean;
   /** タブを閉じたときに status を消す（曲ごとに消去用イベントへの署名が1回増える） */
   clearOnClose: boolean;
+  /** 再生中にタブを閉じようとしたら、ブラウザの「このサイトを離れますか？」を表示する */
+  confirmBeforeClose: boolean;
   /** NIP-65 relay list が見つからないときに使う relay */
   fallbackRelays: string[];
   /** 前回 Nostr にログインしていたら起動時に再接続する */
@@ -24,6 +26,7 @@ const KEY = "nowstr:settings";
 const defaults: Settings = {
   statusEnabled: true,
   clearOnClose: true,
+  confirmBeforeClose: true,
   fallbackRelays: DEFAULT_FALLBACK_RELAYS,
   nostrAutoConnect: false,
 };

@@ -186,6 +186,10 @@ const SpotifySetup = () => (
       <LinkStep />
     </ol>
     <Notes>
+      <Note icon="i-lucide-monitor">
+        この Nowstr
+        のタブは開いたままにしておいてください（音の再生と、ステータスの署名・投稿をこのタブで行います）。
+      </Note>
       <Note icon="i-lucide-volume-2">
         連携中は、音がこのタブから流れます。曲の操作（再生・一時停止・曲送り・音量など）は、いつもどおり
         Spotify アプリで行えます。
@@ -262,7 +266,7 @@ const YouTubeMusicSetup = () => (
     <Notes>
       <Note icon="i-lucide-monitor">
         YouTube Music はいつもどおりブラウザのタブで使えます。この Nowstr
-        のタブも開いたままにしておいてください（署名と投稿はこのタブで行います）。
+        のタブも開いたままにしておいてください（ステータスの署名・投稿をこのタブで行います）。
       </Note>
       <StatusNote />
       <Note icon="i-lucide-smartphone">

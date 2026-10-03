@@ -1,4 +1,4 @@
-import { createEffect, on, onMount } from "solid-js";
+import { createEffect, on, onCleanup, onMount } from "solid-js";
 import { canPublishStatus, initNostr, statusController } from "./state/nostr";
 import { settings } from "./state/settings";
 import { activePlayback, activeSource, availableSources, SOURCE_LABELS } from "./state/source";
@@ -39,6 +39,18 @@ const App = () => {
   onMount(() => {
     initYouTubeMusic();
     void initNostr();
+
+    // 再生中（= ステータスを掲示している、Spotify なら音も流れている）にタブを閉じようとしたら確認する。
+    // ブラウザが表示する定型の確認ダイアログで、文言は変えられない。
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      const playing = activePlayback();
+      if (!settings.confirmBeforeClose || !playing?.track || playing.paused) return;
+      event.preventDefault();
+      // 古いブラウザ向け
+      event.returnValue = true;
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    onCleanup(() => window.removeEventListener("beforeunload", onBeforeUnload));
   });
 
   const services = availableSources.map((source) => SOURCE_LABELS[source]).join(" または ");

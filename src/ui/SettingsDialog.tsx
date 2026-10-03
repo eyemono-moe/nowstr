@@ -73,6 +73,24 @@ export const SettingsDialog = () => {
               <Switch.HiddenInput />
             </Switch.Root>
 
+            <Switch.Root
+              class="flex items-center justify-between gap-4"
+              checked={settings.confirmBeforeClose}
+              onCheckedChange={({ checked }) => updateSettings({ confirmBeforeClose: checked })}
+            >
+              <div>
+                <Switch.Label class="font-medium">再生中はタブを閉じる前に確認する</Switch.Label>
+                <p class="text-xs text-muted">
+                  曲の再生中に Nowstr
+                  のタブを閉じようとすると、ブラウザの確認ダイアログを表示します。
+                </p>
+              </div>
+              <Switch.Control class="h-6 w-11 shrink-0 rounded-full bg-surface-hover p-0.5 transition data-[state=checked]:bg-accent">
+                <Switch.Thumb class="block h-5 w-5 rounded-full bg-fg transition data-[state=checked]:translate-x-5" />
+              </Switch.Control>
+              <Switch.HiddenInput />
+            </Switch.Root>
+
             <div class="flex flex-col gap-2">
               <p class="font-medium">投稿先 relay</p>
               <Show
