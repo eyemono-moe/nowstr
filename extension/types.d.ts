@@ -18,3 +18,10 @@ type BridgePlaybackState = {
 };
 
 type BridgePlaybackMessage = { type: "playback"; state: BridgePlaybackState | null };
+
+// 同じタブで古い content script が残っていたら止めるためのフック。
+// 拡張の再読み込み・更新時、古いスクリプトは孤立したまま残り、新しいものが注入されるため。
+interface Window {
+  __nowstrYtmStop?: () => void;
+  __nowstrBridgeStop?: () => void;
+}

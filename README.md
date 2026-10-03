@@ -74,6 +74,8 @@ Chrome ウェブストアには未公開なので、「パッケージ化され�
 3. **パッケージ化されていない拡張機能を読み込む** から `extension/` フォルダを選ぶ
 4. Nowstr のページを再読み込みし、「はじめかた」で YouTube Music を選ぶ
 
+インストール・更新した時点で開いていた YouTube Music / Nowstr のタブには、拡張が自動でスクリプトを入れ直します。それでも連携されない場合は、両方のタブを再読み込みしてください（Vivaldi など他の Chromium 系ブラウザでも同じ手順で使えます）。
+
 Nowstr を自分のドメインでホスティングする場合は、`extension/manifest.json` の `content_scripts` にある `bridge.js` の `matches` に、そのドメインを追加してください（既定では `https://nowstr.eyemono.moe/*` と `127.0.0.1` / `localhost` のみ）。
 
 ### 制約と注意

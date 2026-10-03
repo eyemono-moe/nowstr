@@ -187,12 +187,9 @@ const SpotifySetup = () => (
     </ol>
     <Notes>
       <Note icon="i-lucide-monitor">
-        この Nowstr
-        のタブは開いたままにしておいてください（音の再生と、ステータスの署名・投稿をこのタブで行います）。
-      </Note>
-      <Note icon="i-lucide-volume-2">
-        連携中は、音がこのタブから流れます。曲の操作（再生・一時停止・曲送り・音量など）は、いつもどおり
-        Spotify アプリで行えます。
+        Spotify はいつもどおり Spotify
+        アプリで操作できます（再生・一時停止・曲送り・音量など）。この Nowstr
+        のタブも開いたままにしておいてください（連携中の音はこのタブから流れ、ステータスの署名・投稿もこのタブで行います）。
       </Note>
       <StatusNote />
       <Note icon="i-lucide-repeat">

@@ -46,3 +46,20 @@ chrome.runtime.onConnect.addListener((port) => {
     port.onDisconnect.addListener(() => pages.delete(port));
   }
 });
+
+// 拡張をインストール・更新した時点ですでに開いているタブには、manifest の content script が入らない
+// （タブを再読み込みするまで動かない）。そのため、該当するタブには自分で注入する。
+const injectIntoOpenTabs = async () => {
+  for (const script of chrome.runtime.getManifest().content_scripts ?? []) {
+    if (!script.matches || !script.js) continue;
+    const tabs = await chrome.tabs.query({ url: script.matches });
+    for (const tab of tabs) {
+      if (tab.id === undefined || tab.discarded) continue;
+      chrome.scripting.executeScript({ target: { tabId: tab.id }, files: script.js }).catch(() => {
+        // 読み込み中のタブなどには注入できないことがある（その場合は再読み込みで動く）
+      });
+    }
+  }
+};
+
+chrome.runtime.onInstalled.addListener(() => void injectIntoOpenTabs());

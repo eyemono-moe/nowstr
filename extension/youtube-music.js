@@ -11,6 +11,10 @@
   const HEARTBEAT_MS = 15_000;
   const POLL_MS = 1_000;
 
+  // 拡張の更新などで二重に動かないよう、先に動いていたものを止める
+  window.__nowstrYtmStop?.();
+  let stopped = false;
+
   /** @type {chrome.runtime.Port | null} */
   let port = null;
   let lastKey = "";
@@ -20,7 +24,7 @@
 
   const connect = () => {
     // 拡張が更新・削除されたあとは何もしない
-    if (!chrome.runtime?.id) return;
+    if (stopped || !chrome.runtime?.id) return;
     port = chrome.runtime.connect({ name: "ytm" });
     port.onDisconnect.addListener(() => {
       port = null;
@@ -81,7 +85,8 @@
   };
 
   const report = () => {
-    if (!port) return;
+    if (!chrome.runtime?.id) stop();
+    if (stopped || !port) return;
     const state = readState();
     const track = state?.track;
     const key =
@@ -105,10 +110,24 @@
     }
   };
 
+  const onMediaEvent = () => setTimeout(report, 50);
+  const MEDIA_EVENTS = ["play", "pause", "ended", "seeked", "loadedmetadata", "durationchange"];
   // media 要素のイベントはバブリングしないので capture で拾う
-  for (const type of ["play", "pause", "ended", "seeked", "loadedmetadata", "durationchange"]) {
-    document.addEventListener(type, () => setTimeout(report, 50), true);
+  for (const type of MEDIA_EVENTS) document.addEventListener(type, onMediaEvent, true);
+  const timer = setInterval(report, POLL_MS);
+
+  function stop() {
+    stopped = true;
+    clearInterval(timer);
+    for (const type of MEDIA_EVENTS) document.removeEventListener(type, onMediaEvent, true);
+    try {
+      port?.disconnect();
+    } catch {
+      // 拡張が更新済みで切断できないことがある
+    }
+    port = null;
   }
-  setInterval(report, POLL_MS);
+  window.__nowstrYtmStop = stop;
+
   connect();
 })();
