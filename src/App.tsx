@@ -1,5 +1,4 @@
 import { createEffect, on, onCleanup, onMount } from "solid-js";
-import { debugLog, describePlayback } from "./lib/debug";
 import { canPublishStatus, initNostr, statusController } from "./state/nostr";
 import { settings } from "./state/settings";
 import { activePlayback, activeSource, availableSources, SOURCE_LABELS } from "./state/source";
@@ -23,14 +22,7 @@ const App = () => {
   // 再生元 → MusicStatusController。再生元と Nostr はここでだけ接続する。
   // Nostr 未接続・投稿オフのときは null を渡す（掲示中なら clear される）。
   createEffect(() => {
-    const playback = activePlayback();
-    const publishing = settings.statusEnabled && canPublishStatus();
-    debugLog(
-      "app",
-      `再生元=${activeSource()} 投稿=${publishing ? "on" : "off"}`,
-      describePlayback(playback),
-    );
-    statusController.update(publishing ? playback : null);
+    statusController.update(settings.statusEnabled && canPublishStatus() ? activePlayback() : null);
   });
 
   // Spotify は選ばれたときにだけ接続する（Spotify Connect のデバイス一覧に不要に出さないため）

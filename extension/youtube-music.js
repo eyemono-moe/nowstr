@@ -7,17 +7,12 @@
 //   取れなければ URL の ?v= やアートワークの URL から探す。ホームやプレイリストのページで再生していても動く
 //
 // 読み取った情報は拡張の service worker 経由で Nowstr のタブにだけ渡し、どこにも保存しない。
-// 動作確認中のため、このタブの DevTools コンソールに "[Nowstr Bridge:ytm]" でログを出す。
 
 (() => {
   const HEARTBEAT_MS = 15_000;
   const POLL_MS = 1_000;
 
-  /** @param {unknown[]} args */
-  const log = (...args) => console.info("[Nowstr Bridge:ytm]", ...args);
-
   // 拡張の更新などで二重に動かないよう、先に動いていたものを止める
-  if (window.__nowstrYtmStop) log("古いスクリプトを停止します");
   window.__nowstrYtmStop?.();
   let stopped = false;
 
@@ -27,15 +22,12 @@
   let lastSentAt = 0;
   /** @type {BridgePlaybackState | null} */
   let lastState = null;
-  let lastSkipReason = "";
 
   const connect = () => {
     // 拡張が更新・削除されたあとは何もしない
     if (stopped || !chrome.runtime?.id) return;
     port = chrome.runtime.connect({ name: "ytm" });
-    log("service worker に接続しました");
     port.onDisconnect.addListener(() => {
-      log("service worker から切断されました。1秒後に再接続します", chrome.runtime.lastError ?? "");
       port = null;
       setTimeout(connect, 1_000);
     });
@@ -98,38 +90,32 @@
     return best?.src?.startsWith("https://") ? best.src : null;
   };
 
-  /** @returns {{ state: BridgePlaybackState | null, reason: string }} */
+  /** @returns {BridgePlaybackState | null} */
   const readState = () => {
     const video = document.querySelector("video");
     const metadata = navigator.mediaSession?.metadata;
     // 広告の再生中は曲として扱わない（mediaSession に広告の情報が入るため）
-    if (document.querySelector(".ad-showing")) return { state: null, reason: "広告を再生中" };
-    if (!video) return { state: null, reason: "<video> が見つからない" };
-    if (!metadata?.title) return { state: null, reason: "mediaSession.metadata が空" };
+    if (document.querySelector(".ad-showing") || !video || !metadata?.title) return null;
     const durationMs = Number.isFinite(video.duration) ? Math.round(video.duration * 1000) : 0;
-    if (durationMs <= 0)
-      return { state: null, reason: `曲の長さが不明 (duration=${video.duration})` };
+    if (durationMs <= 0) return null;
     const id = videoId(metadata);
     const query = `${metadata.title} ${metadata.artist ?? ""}`.trim();
     return {
-      state: {
-        track: {
-          // ID が見つからない場合でも、検索結果へのリンクで代用する
-          uri: id
-            ? `https://music.youtube.com/watch?v=${encodeURIComponent(id)}`
-            : `https://music.youtube.com/search?q=${encodeURIComponent(query)}`,
-          title: metadata.title,
-          artists: metadata.artist ? [metadata.artist] : [],
-          album: metadata.album ?? "",
-          artworkUrl: largestArtwork(metadata.artwork),
-          durationMs,
-        },
-        paused: video.paused || video.ended,
-        positionMs: Math.round(video.currentTime * 1000),
+      track: {
+        // ID が見つからない場合でも、検索結果へのリンクで代用する
+        uri: id
+          ? `https://music.youtube.com/watch?v=${encodeURIComponent(id)}`
+          : `https://music.youtube.com/search?q=${encodeURIComponent(query)}`,
+        title: metadata.title,
+        artists: metadata.artist ? [metadata.artist] : [],
+        album: metadata.album ?? "",
+        artworkUrl: largestArtwork(metadata.artwork),
         durationMs,
-        updatedAt: Date.now(),
       },
-      reason: "",
+      paused: video.paused || video.ended,
+      positionMs: Math.round(video.currentTime * 1000),
+      durationMs,
+      updatedAt: Date.now(),
     };
   };
 
@@ -144,23 +130,12 @@
     return Math.abs(next.positionMs - expected) > 3_000;
   };
 
-  /** @param {BridgePlaybackState | null} state */
-  const describe = (state) =>
-    state?.track
-      ? `${state.track.title} / ${state.track.artists.join(", ")} ${state.paused ? "⏸" : "▶"} ${Math.round(state.positionMs / 1000)}/${Math.round(state.durationMs / 1000)}s ${state.track.uri}`
-      : "null";
-
   const report = () => {
     if (!chrome.runtime?.id) {
-      log("拡張が更新・削除されたため停止します（このタブを再読み込みしてください）");
       stop();
     }
     if (stopped || !port) return;
-    const { state, reason } = readState();
-    if (reason !== lastSkipReason) {
-      if (reason) log("曲として読めません:", reason);
-      lastSkipReason = reason;
-    }
+    const state = readState();
     const track = state?.track;
     const key =
       state && track
@@ -173,14 +148,12 @@
       lastState = state;
       return;
     }
-    if (key !== lastKey) log("送信:", describe(state));
     lastKey = key;
     lastSentAt = now;
     lastState = state;
     try {
       port.postMessage({ type: "playback", state });
-    } catch (error) {
-      log("送信に失敗しました", error);
+    } catch {
       port = null;
     }
   };
@@ -204,6 +177,5 @@
   }
   window.__nowstrYtmStop = stop;
 
-  log(`起動しました (v${chrome.runtime.getManifest().version})`);
   connect();
 })();

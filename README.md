@@ -82,7 +82,7 @@ Nowstr を自分のドメインでホスティングする場合は、`extension
 
 ### 制約と注意
 
-- 動作確認用に、拡張と Nowstr はコンソールにログを出します（`[Nowstr Bridge:ytm]` は YouTube Music のタブ、`[Nowstr Bridge:bg]` は `chrome://extensions` の「service worker」、`[Nowstr Bridge:page]` と `[Nowstr:…]` は Nowstr のタブ）。Nowstr 側のログは `localStorage.setItem("nowstr:debug", "0")` で止められます。設定画面の「診断情報」でも状態を確認できます。
+- うまく連携されないときは、設定画面の「診断情報」で状態を確認できます（コピーして不具合報告に添えられます）。
 
 - 対象は、デスクトップブラウザで開いている YouTube Music（`music.youtube.com`）だけです。スマートフォンのアプリなどで再生している曲は取得できません。
 - 広告の再生中（`.ad-showing`）は曲として扱いません。広告中は mediaSession に広告の情報が入るためです。

@@ -1,5 +1,5 @@
 import { createMemo, For } from "solid-js";
-import { describePlayback } from "../lib/debug";
+import type { PlaybackState } from "../core/playback";
 import { nostr } from "../state/nostr";
 import { activePlayback, activeSource } from "../state/source";
 import { spotify } from "../state/spotify";
@@ -10,6 +10,15 @@ import {
   lastMessageAt,
   youtubePlayback,
 } from "../state/youtube";
+
+const describePlayback = (state: PlaybackState | null): string => {
+  if (!state) return "null";
+  const track = state.track
+    ? `${state.track.title} / ${state.track.artists.join(", ")}`
+    : "(track なし)";
+  const sec = (ms: number) => Math.round(ms / 1000);
+  return `${track} ${state.paused ? "⏸" : "▶"} ${sec(state.positionMs)}/${sec(state.durationMs)}s`;
+};
 
 const time = (at: number | null) => (at ? new Date(at).toLocaleTimeString() : "-");
 
@@ -51,8 +60,7 @@ export const Diagnostics = () => {
     <details class="flex flex-col gap-2">
       <summary class="cursor-pointer font-medium">診断情報</summary>
       <p class="mt-2 text-xs text-muted">
-        うまく連携されないときの確認用です。詳しいログは DevTools のコンソール（"[Nowstr"
-        で始まる行）に出ています。
+        うまく連携されないときの確認用です。不具合を報告するときは、コピーして添えてください。
       </p>
       <dl class="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
         <For each={rows()}>
