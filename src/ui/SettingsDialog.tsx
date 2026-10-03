@@ -6,6 +6,7 @@ import { normalizeRelayUrl } from "../core/relay-list";
 import { nostr, refreshRelays, setClearOnClose } from "../state/nostr";
 import { DEFAULT_FALLBACK_RELAYS, settings, updateSettings } from "../state/settings";
 import { notifyInfo } from "../state/toast";
+import { Diagnostics } from "./Diagnostics";
 
 export const SettingsDialog = () => {
   const [relayText, setRelayText] = createSignal("");
@@ -30,7 +31,7 @@ export const SettingsDialog = () => {
       <Portal>
         <Dialog.Backdrop class="fixed inset-0 z-40 bg-black/60" />
         <Dialog.Positioner class="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <Dialog.Content class="max-w-lg w-full flex flex-col gap-5 rounded-2xl bg-surface p-6 text-fg shadow-2xl outline-none">
+          <Dialog.Content class="max-h-[90vh] overflow-y-auto max-w-lg w-full flex flex-col gap-5 rounded-2xl bg-surface p-6 text-fg shadow-2xl outline-none">
             <header class="flex items-center justify-between">
               <Dialog.Title class="text-lg font-semibold">設定</Dialog.Title>
               <Dialog.CloseTrigger class="btn-icon" aria-label="閉じる">
@@ -134,6 +135,8 @@ export const SettingsDialog = () => {
                 </button>
               </div>
             </div>
+
+            <Diagnostics />
           </Dialog.Content>
         </Dialog.Positioner>
       </Portal>

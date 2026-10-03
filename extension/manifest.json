@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Nowstr Bridge",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "YouTube Music で再生中の曲を Nowstr に渡し、Nostr のステータスとして掲示できるようにします。",
   "icons": {
     "16": "icons/icon-16.png",
@@ -21,6 +21,12 @@
     "http://localhost:*/*"
   ],
   "content_scripts": [
+    {
+      "matches": ["https://music.youtube.com/*"],
+      "js": ["youtube-music-main.js"],
+      "run_at": "document_idle",
+      "world": "MAIN"
+    },
     {
       "matches": ["https://music.youtube.com/*"],
       "js": ["youtube-music.js"],

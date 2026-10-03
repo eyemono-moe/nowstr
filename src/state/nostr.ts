@@ -1,6 +1,7 @@
 import { createStore } from "solid-js/store";
 import type { EventTemplate } from "../core/nip38";
 import { normalizeRelayUrl } from "../core/relay-list";
+import { debugLog } from "../lib/debug";
 import { AppError } from "../lib/errors";
 import { NostrRelayClient } from "../nostr/publisher";
 import { createNip07Signer, hasNip07, type NostrSigner, waitForNip07 } from "../nostr/signer";
@@ -46,8 +47,10 @@ const fallbackRelays = (): string[] =>
 
 const signAndPublish = async (template: EventTemplate): Promise<void> => {
   if (!signer || !client) throw new AppError("nip07_unavailable", "Nostr にログインしていません。");
+  debugLog("nostr", `署名して送信: "${template.content}"`, template.tags);
   const event = await signer.signEvent(template);
   const result = await client.publish(event, store.relays);
+  debugLog("nostr", "送信結果:", result);
   if (result.accepted.length > 0) {
     if (result.rejected.length + result.unreachable.length > 0) {
       console.warn("Some relays did not accept the music status", result);
@@ -83,6 +86,7 @@ export const statusController = new MusicStatusController({
     unloadSender.arm(await signer.signEvent(template), store.relays);
   },
   onChange: (snapshot) => {
+    debugLog("status", snapshot.phase, snapshot.status?.content ?? "");
     setStore("status", snapshot);
     if (snapshot.phase === "error") notifyError(snapshot.error, "Nostr status");
   },

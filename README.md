@@ -58,7 +58,9 @@ YouTube Music には「いま再生中の曲」を取得できる公式 API が�
 ```text
 [music.youtube.com のタブ]  extension/youtube-music.js
   navigator.mediaSession.metadata（曲名・アーティスト・アルバム・アートワーク）
-  <video>（再生中か・再生位置・長さ）、URL の ?v=（曲の URL）
+  <video>（再生中か・再生位置・長さ）
+  プレイヤーの getVideoData()（曲の ID。extension/youtube-music-main.js がページ側で読む）
+  ※ ホーム・プレイリスト・ライブラリなど、どのページで再生していても取得できる
         ↓ chrome.runtime（extension/background.js が中継）
 [Nowstr のタブ]  extension/bridge.js → window.postMessage
         ↓ src/youtube/extension-protocol.ts で検証
@@ -79,6 +81,8 @@ Chrome ウェブストアには未公開なので、「パッケージ化され�
 Nowstr を自分のドメインでホスティングする場合は、`extension/manifest.json` の `content_scripts` にある `bridge.js` の `matches` に、そのドメインを追加してください（既定では `https://nowstr.eyemono.moe/*` と `127.0.0.1` / `localhost` のみ）。
 
 ### 制約と注意
+
+- 動作確認用に、拡張と Nowstr はコンソールにログを出します（`[Nowstr Bridge:ytm]` は YouTube Music のタブ、`[Nowstr Bridge:bg]` は `chrome://extensions` の「service worker」、`[Nowstr Bridge:page]` と `[Nowstr:…]` は Nowstr のタブ）。Nowstr 側のログは `localStorage.setItem("nowstr:debug", "0")` で止められます。設定画面の「診断情報」でも状態を確認できます。
 
 - 対象は、デスクトップブラウザで開いている YouTube Music（`music.youtube.com`）だけです。スマートフォンのアプリなどで再生している曲は取得できません。
 - 広告の再生中（`.ad-showing`）は曲として扱いません。広告中は mediaSession に広告の情報が入るためです。
