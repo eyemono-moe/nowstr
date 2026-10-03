@@ -30,3 +30,6 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Nowstr Bridge の配布用 zip
+nowstr-bridge.zip

@@ -21,6 +21,12 @@ export default defineConfig({
     tasks: {
       typecheck: { command: "vp check --no-fmt --no-lint", cache: false },
       deploy: { command: "vp build && wrangler deploy", cache: false },
+      // ブラウザ拡張 Nowstr Bridge を配布用の zip にする（Release は .github/workflows/extension-release.yml で作る）
+      "pack:extension": {
+        command:
+          "rm -f nowstr-bridge.zip && cd extension && zip -qr ../nowstr-bridge.zip . -x types.d.ts",
+        cache: false,
+      },
     },
   },
   // - Spotify は redirect URI に `localhost` を許可しないため、ループバック IP で待ち受ける。

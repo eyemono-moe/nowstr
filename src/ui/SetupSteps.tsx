@@ -200,8 +200,8 @@ const SpotifySetup = () => (
   </>
 );
 
-/** 拡張のインストール方法（Chrome ウェブストア公開前なので README の手順へ案内する） */
-const EXTENSION_GUIDE_URL = `${SOURCE_URL}#youtube-music-連携`;
+/** 拡張の配布ページ（Chrome ウェブストア公開前なので GitHub Release の zip。インストール手順もそこに書いてある） */
+const EXTENSION_GUIDE_URL = `${SOURCE_URL}/releases/latest`;
 
 /**
  * YouTube Music: 再生は YouTube Music のタブで普段どおり行い、

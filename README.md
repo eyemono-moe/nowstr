@@ -67,18 +67,34 @@ YouTube Music には「いま再生中の曲」を取得できる公式 API が�
   MusicStatusController → NIP-07 で署名 → relay
 ```
 
-### Nowstr Bridge のインストール（プロトタイプ）
+### Nowstr Bridge のインストール
 
-Chrome ウェブストアには未公開なので、「パッケージ化されていない拡張機能」として読み込みます。
+Chrome ウェブストアには未公開なので、配布している zip を「パッケージ化されていない拡張機能」として読み込みます。
 
-1. このリポジトリを clone（またはダウンロード）する
+1. [Releases](https://github.com/eyemono-moe/nowstr/releases/latest) から **nowstr-bridge.zip** をダウンロードして展開する（[直接ダウンロード](https://github.com/eyemono-moe/nowstr/releases/latest/download/nowstr-bridge.zip)）
 2. Chrome で `chrome://extensions` を開き、右上の **デベロッパー モード** をオンにする
-3. **パッケージ化されていない拡張機能を読み込む** から `extension/` フォルダを選ぶ
-4. Nowstr のページを再読み込みし、「はじめかた」で YouTube Music を選ぶ
+3. **パッケージ化されていない拡張機能を読み込む** から、展開したフォルダを選ぶ
+4. Nowstr のページを開き、「はじめかた」で YouTube Music を選ぶ
 
-インストール・更新した時点で開いていた YouTube Music / Nowstr のタブには、拡張が自動でスクリプトを入れ直します。それでも連携されない場合は、両方のタブを再読み込みしてください（Vivaldi など他の Chromium 系ブラウザでも同じ手順で使えます）。
+- 展開したフォルダは削除しないでください（Chrome はそのフォルダから拡張を読み込み続けます）。
+- 更新するときは、フォルダの中身を新しい zip の内容に置き換えて、`chrome://extensions` で拡張の再読み込みボタンを押してください。自動更新はされません。
+- インストール・更新した時点で開いていた YouTube Music / Nowstr のタブには、拡張が自動でスクリプトを入れ直します。それでも連携されない場合は、両方のタブを再読み込みしてください。
+- Vivaldi・Edge・Brave など他の Chromium 系ブラウザでも同じ手順で使えます。
 
-Nowstr を自分のドメインでホスティングする場合は、`extension/manifest.json` の `content_scripts` にある `bridge.js` の `matches` に、そのドメインを追加してください（既定では `https://nowstr.eyemono.moe/*` と `127.0.0.1` / `localhost` のみ）。
+#### 自分のドメインでホスティングする場合
+
+配布している zip は `https://nowstr.eyemono.moe` と `127.0.0.1` / `localhost` でだけ動きます。自分のドメインで Nowstr をホスティングする場合は、`extension/manifest.json` の `host_permissions` と、`bridge.js` の `content_scripts` の `matches` にそのドメインを追加し、`extension/` フォルダを読み込んでください。
+
+#### zip のリリース手順（メンテナー向け）
+
+`extension/manifest.json` の `version` を上げてコミットし、同じ番号のタグを push すると、GitHub Actions（`.github/workflows/extension-release.yml`）が zip を作って Release に添付します。
+
+```sh
+git tag extension-v0.1.3
+git push origin extension-v0.1.3
+```
+
+手元で zip だけ作る場合は `vp run pack:extension` を実行してください（`nowstr-bridge.zip` ができます）。
 
 ### 制約と注意
 
