@@ -16,8 +16,12 @@ export const SOURCE_LABELS: Record<PlaybackSource, string> = {
   "youtube-music": "YouTube Music",
 };
 
+/**
+ * 並び順がそのまま UI の表示順と初期選択になる。
+ * Spotify は Development Mode の制約（Premium 必須・5人まで）が厳しいので、YouTube Music を主にする。
+ */
 export const availableSources: PlaybackSource[] = isSpotifyConfigured()
-  ? ["spotify", "youtube-music"]
+  ? ["youtube-music", "spotify"]
   : ["youtube-music"];
 
 export const activeSource = createMemo<PlaybackSource>(() =>

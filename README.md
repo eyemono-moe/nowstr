@@ -1,9 +1,9 @@
 # Nowstr
 
-Spotify または YouTube Music で再生中の曲を、Nostr のステータス（[NIP-38](https://github.com/nostr-protocol/nips/blob/master/38.md) の music status）として自動で設定する、1枚だけのウェブページです。
+YouTube Music または Spotify で再生中の曲を、Nostr のステータス（[NIP-38](https://github.com/nostr-protocol/nips/blob/master/38.md) の music status）として自動で設定する、1枚だけのウェブページです。
 
-- **Spotify**: Nowstr のタブが Spotify アプリのデバイス一覧に「Nowstr」として表示されます。再生操作は、いつもどおり Spotify 公式アプリから行います
 - **YouTube Music**: ブラウザ拡張「[Nowstr Bridge](#youtube-music-連携)」が、ブラウザで開いている YouTube Music のタブから再生中の曲を Nowstr に届けます
+- **Spotify**: Nowstr のタブが Spotify アプリのデバイス一覧に「Nowstr」として表示されます。再生操作は、いつもどおり Spotify 公式アプリから行います
 - 曲の開始・変更・一時停止・再開に合わせて、`kind:30315` / `d=music` の status を publish / clear します（`r` タグには、多くのクライアントがリンクとして表示できる `https://open.spotify.com/...` / `https://music.youtube.com/...` の URL を入れます）
 - バックエンドなしの静的な1ページです（`dist/` をそのまま配信できます）
 - Spotify の Client ID をビルド時に設定しなければ、Spotify の導線は表示されず YouTube Music 専用になります
