@@ -51,9 +51,17 @@ describe("desiredMusicStatus", () => {
   it("再生中なら status を返す", () => {
     expect(desiredMusicStatus(playing())).toEqual({
       trackUri: "spotify:track:a",
+      url: "https://open.spotify.com/track/a",
       content: "Intergalactic - Beastie Boys",
       expiresAt: 1_700_000_200,
     });
+  });
+
+  it("リンクは Web の URL にする（YouTube Music はそのまま、Web の URL がない Spotify の URI はそのまま）", () => {
+    const youtube = "https://music.youtube.com/watch?v=abc";
+    expect(desiredMusicStatus(playing({ track: { ...trackA, uri: youtube } }))?.url).toBe(youtube);
+    const local = "spotify:local:Artist:Album:Title:180";
+    expect(desiredMusicStatus(playing({ track: { ...trackA, uri: local } }))?.url).toBe(local);
   });
 
   it("複数アーティストはカンマで連結する", () => {
@@ -71,6 +79,7 @@ describe("desiredMusicStatus", () => {
 describe("decideStatusAction", () => {
   const published: MusicStatus = {
     trackUri: "spotify:track:a",
+    url: "https://open.spotify.com/track/a",
     content: "Intergalactic - Beastie Boys",
     expiresAt: 1_700_000_200,
   };

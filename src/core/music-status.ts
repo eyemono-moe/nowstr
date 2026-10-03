@@ -1,8 +1,12 @@
 import type { PlaybackState } from "./playback";
+import { spotifyWebUrl } from "./spotify-link";
 
 /** Nostr に掲示する music status の内容 */
 export type MusicStatus = {
+  /** 曲の同一性の判定に使う（Spotify は spotify:track:..., YouTube Music は曲の URL） */
   trackUri: string;
+  /** r タグに入れるリンク。多くのクライアントがリンクとして表示できるよう、可能なら https の URL にする */
+  url: string;
   content: string;
   /** 曲が終わると予想される時刻 (Unix 秒) */
   expiresAt: number;
@@ -31,6 +35,7 @@ export const desiredMusicStatus = (state: PlaybackState | null): MusicStatus | n
   const { track } = state;
   return {
     trackUri: track.uri,
+    url: track.uri.startsWith("spotify:") ? (spotifyWebUrl(track.uri) ?? track.uri) : track.uri,
     content: `${track.title} - ${track.artists.join(", ")}`,
     expiresAt: computeExpiration(state),
   };

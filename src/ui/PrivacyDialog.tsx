@@ -118,8 +118,9 @@ export const PrivacyDialog = () => {
                   </li>
                   <li>
                     <strong>Nostr relay</strong>：再生中の曲の music
-                    status（曲名・アーティスト名・Spotify
-                    URI・曲の終了予定時刻）を、あなたの鍵で署名した<strong>公開イベント</strong>
+                    status（曲名・アーティスト名・曲のリンク（open.spotify.com または
+                    music.youtube.com の URL）・曲の終了予定時刻）を、あなたの鍵で署名した
+                    <strong>公開イベント</strong>
                     として、あなたの write relay（または設定した fallback relay）に送信します。Nostr
                     の性質上、この情報は誰でも閲覧でき、第三者が保存する可能性があります。終了予定時刻（NIP-40
                     の expiration）を過ぎたイベントの削除は各 relay の実装に依存します。
