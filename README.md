@@ -143,12 +143,13 @@ git push origin extension-v0.1.3
 
 `.env.example` を `.env.local` にコピーして設定します。YouTube Music 連携だけを使う場合、設定は不要です（`VITE_SPOTIFY_CLIENT_ID` を空にすると Spotify の導線は表示されません）。
 
-| 変数                        | 必須 | 説明                                                                                             |
-| --------------------------- | ---- | ------------------------------------------------------------------------------------------------ |
-| `VITE_SPOTIFY_CLIENT_ID`    |      | 自分の Spotify Developer App の Client ID（Spotify 連携に必須。空なら Spotify の導線を出さない） |
-| `VITE_SPOTIFY_REDIRECT_URI` |      | Redirect URI を固定したい場合のみ（既定: `${location.origin}/`）                                 |
-| `VITE_SOURCE_URL`           |      | フッターに表示するソースコードの URL                                                             |
-| `VITE_CONTACT_URL`          |      | プライバシーポリシーに表示する問い合わせ先（URL / `mailto:`）。既定はソースの URL                |
+| 変数                        | 必須 | 説明                                                                                                 |
+| --------------------------- | ---- | ---------------------------------------------------------------------------------------------------- |
+| `VITE_SPOTIFY_CLIENT_ID`    |      | 自分の Spotify Developer App の Client ID（Spotify 連携に必須。空なら Spotify の導線を出さない）     |
+| `VITE_SPOTIFY_REDIRECT_URI` |      | Redirect URI を固定したい場合のみ（既定: `${location.origin}/`）                                     |
+| `VITE_SITE_URL`             |      | 公開する URL（例: `https://nowstr.example.com`）。設定すると OGP の `og:url` / `og:image` を出力する |
+| `VITE_SOURCE_URL`           |      | フッターに表示するソースコードの URL                                                                 |
+| `VITE_CONTACT_URL`          |      | プライバシーポリシーに表示する問い合わせ先（URL / `mailto:`）。既定はソースの URL                    |
 
 ### 3. ビルド・デプロイする
 
