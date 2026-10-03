@@ -7,6 +7,7 @@ import { notifyInfo } from "../state/toast";
 import {
   extensionDetected,
   extensionVersion,
+  LATEST_EXTENSION_VERSION,
   lastMessageAt,
   youtubePlayback,
 } from "../state/youtube";
@@ -32,7 +33,7 @@ export const Diagnostics = () => {
       extensionDetected() === null
         ? "確認中"
         : extensionDetected()
-          ? `検出 (v${extensionVersion() ?? "?"})`
+          ? `検出 (v${extensionVersion() ?? "?"}, 最新 v${LATEST_EXTENSION_VERSION})`
           : "未検出",
     ],
     ["拡張から最後に受信", time(lastMessageAt())],

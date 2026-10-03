@@ -90,9 +90,11 @@ Chrome ウェブストアには未公開なので、配布している zip を�
 `extension/manifest.json` の `version` を上げてコミットし、同じ番号のタグを push すると、GitHub Actions（`.github/workflows/extension-release.yml`）が zip を作って Release に添付します。
 
 ```sh
-git tag extension-v0.1.3
-git push origin extension-v0.1.3
+git tag extension-v0.1.4
+git push origin extension-v0.1.4
 ```
+
+ページには、ビルドしたコミットの `extension/manifest.json` の `version` が最新版として埋め込まれ、それより古い拡張を使っている人には更新を案内します。案内先は最新の Release なので、Release ができてから（Actions の完了を確認してから）ページをデプロイしてください。
 
 手元で zip だけ作る場合は `vp run pack:extension` を実行してください（`nowstr-bridge.zip` ができます）。
 

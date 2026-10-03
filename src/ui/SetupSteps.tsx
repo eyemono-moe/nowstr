@@ -12,7 +12,13 @@ import {
   spotify,
   transferHere,
 } from "../state/spotify";
-import { extensionDetected, youtubePlayback } from "../state/youtube";
+import {
+  extensionDetected,
+  extensionOutdated,
+  extensionVersion,
+  LATEST_EXTENSION_VERSION,
+  youtubePlayback,
+} from "../state/youtube";
 
 const Step = (props: {
   index: number;
@@ -216,6 +222,10 @@ const YouTubeMusicSetup = () => (
         title="ブラウザ拡張をインストール"
         status={
           <Switch>
+            <Match when={extensionOutdated()}>
+              Nowstr Bridge v{extensionVersion()} を検出しました。新しいバージョン v
+              {LATEST_EXTENSION_VERSION} があります（今のままでも使えます）
+            </Match>
             <Match when={extensionDetected() === true}>Nowstr Bridge を検出しました</Match>
             <Match when={extensionDetected() === null}>確認中…</Match>
             <Match when={extensionDetected() === false}>
@@ -225,14 +235,14 @@ const YouTubeMusicSetup = () => (
           </Switch>
         }
         action={
-          <Show when={extensionDetected() !== true}>
+          <Show when={extensionDetected() !== true || extensionOutdated()}>
             <a
               href={EXTENSION_GUIDE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              class="btn-primary px-3 py-1.5 text-sm"
+              class={`${extensionOutdated() ? "btn-secondary" : "btn-primary"} px-3 py-1.5 text-sm`}
             >
-              入手方法
+              {extensionOutdated() ? "更新方法" : "入手方法"}
             </a>
           </Show>
         }

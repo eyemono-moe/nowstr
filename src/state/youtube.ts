@@ -1,5 +1,6 @@
 import { createSignal } from "solid-js";
 import type { PlaybackState } from "../core/playback";
+import { isOlderVersion } from "../core/version";
 import { parseExtensionMessage, pingMessage } from "../youtube/extension-protocol";
 
 /**
@@ -17,6 +18,15 @@ const [extensionVersion, setExtensionVersion] = createSignal<string | null>(null
 const [lastMessageAt, setLastMessageAt] = createSignal<number | null>(null);
 
 export { extensionDetected, extensionVersion, lastMessageAt, youtubePlayback };
+
+/** 配布している最新の拡張のバージョン */
+export const LATEST_EXTENSION_VERSION = __LATEST_EXTENSION_VERSION__;
+
+/** 入っている拡張が最新版より古いか。古くても動くので、更新を案内するだけにする */
+export const extensionOutdated = (): boolean => {
+  const version = extensionVersion();
+  return version !== null && isOlderVersion(version, LATEST_EXTENSION_VERSION);
+};
 
 /** 拡張の content script より先にページが動き出すことがあるので、しばらく待ってから「なし」と判定する */
 const DETECT_TIMEOUT_MS = 2_000;

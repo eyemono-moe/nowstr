@@ -11,3 +11,6 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+/** 配布している最新の拡張 Nowstr Bridge のバージョン（ビルド時に extension/manifest.json から埋め込む） */
+declare const __LATEST_EXTENSION_VERSION__: string;

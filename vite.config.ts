@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import basicSsl from "@vitejs/plugin-basic-ssl";
 import UnoCSS from "unocss/vite";
 import { defineConfig, lazyPlugins, loadEnv, type Plugin } from "vite-plus";
@@ -31,7 +32,18 @@ const siteMeta = (siteUrl: string | undefined): Plugin => ({
   },
 });
 
+/**
+ * 同じコミットの拡張のバージョンを最新版としてページに埋め込み、古い拡張を使っている人に更新を案内する。
+ * そのため、拡張のバージョンを上げたら Release を作ってからデプロイすること。
+ */
+const extensionVersion: string = JSON.parse(
+  readFileSync(new URL("./extension/manifest.json", import.meta.url), "utf8"),
+).version;
+
 export default defineConfig(({ mode }) => ({
+  define: {
+    __LATEST_EXTENSION_VERSION__: JSON.stringify(extensionVersion),
+  },
   fmt: {
     ignorePatterns: ["docs/**"],
   },
