@@ -1,25 +1,38 @@
 import { Show } from "solid-js";
 import spotifyLogo from "../assets/spotify-full-logo-white.svg";
 import { spotifyWebUrl } from "../core/spotify-link";
-import { playback } from "../state/spotify";
+import { activePlayback, activeSource } from "../state/source";
 import { Artwork } from "./Artwork";
 import { NostrStatusBadge } from "./NostrStatusBadge";
 
 /**
- * このブラウザで再生中の曲。Spotify のメタデータを表示するため、
- * Spotify のロゴによる帰属表示と Spotify へのリンクを必ず添える（Developer Policy / Design Guidelines）。
+ * 再生中の曲。
+ * Spotify のメタデータを表示するときは、Spotify のロゴによる帰属表示と Spotify へのリンクを必ず添える
+ * （Developer Policy / Design Guidelines）。YouTube Music は出典名と元の曲へのリンクを添える。
  */
 export const NowPlaying = () => {
+  const playback = activePlayback;
   const track = () => playback()?.track ?? null;
+  const isSpotify = () => activeSource() === "spotify";
 
   return (
     <section class="card flex flex-col gap-4">
       <Show when={track()} fallback={<p class="text-sm text-muted">再生中の曲はありません</p>}>
         {(t) => {
-          const url = () => spotifyWebUrl(t().uri);
+          const url = () => (isSpotify() ? spotifyWebUrl(t().uri) : t().uri);
           return (
             <>
-              <img src={spotifyLogo} alt="Spotify" class="w-[84px] self-start" />
+              <Show
+                when={isSpotify()}
+                fallback={
+                  <p class="flex items-center gap-1.5 self-start text-sm font-semibold text-muted">
+                    <span class="i-lucide-music" />
+                    YouTube Music
+                  </p>
+                }
+              >
+                <img src={spotifyLogo} alt="Spotify" class="w-[84px] self-start" />
+              </Show>
               <div class="flex items-center gap-4">
                 <Artwork
                   src={t().artworkUrl}
@@ -54,7 +67,7 @@ export const NowPlaying = () => {
                         rel="noopener noreferrer"
                         class="mt-2 self-start rounded-full border border-fg/30 px-3 py-1 text-[11px] font-bold tracking-wider hover:border-fg"
                       >
-                        OPEN SPOTIFY
+                        {isSpotify() ? "OPEN SPOTIFY" : "YouTube Music で開く"}
                       </a>
                     )}
                   </Show>

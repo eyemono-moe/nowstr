@@ -79,6 +79,16 @@ export const PrivacyDialog = () => {
                     アカウント全体の再生履歴や、他のデバイスでの再生状況は取得しません。
                   </li>
                   <li>
+                    <strong>YouTube Music で再生中の曲の情報</strong>
+                    （YouTube Music
+                    を使う場合のみ。曲名・アーティスト名・アルバム名・アートワーク・曲の
+                    URL・再生位置・再生/一時停止の状態） ：ブラウザ拡張「Nowstr
+                    Bridge」が、このブラウザで開いている YouTube Music
+                    のタブの表示内容から読み取り、Nowstr
+                    のタブにだけ渡します。拡張はこの情報を保存せず、外部にも送信しません。YouTube
+                    アカウントの情報や再生履歴は取得しません。
+                  </li>
+                  <li>
                     <strong>Nostr の公開鍵</strong>
                     ：あなたの relay list（NIP-65）の取得と、music status の投稿に使います。秘密鍵は
                     Nowstr では扱わず、署名はブラウザ拡張（NIP-07）が行います。
@@ -104,7 +114,7 @@ export const PrivacyDialog = () => {
                 <ul class="list-disc pl-5">
                   <li>
                     <strong>Spotify</strong>：再生とデバイスの切り替えのため、Spotify の API / Web
-                    Playback SDK と通信します。
+                    Playback SDK と通信します（Spotify を使う場合のみ）。
                   </li>
                   <li>
                     <strong>Nostr relay</strong>：再生中の曲の music

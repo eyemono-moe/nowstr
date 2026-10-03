@@ -1,24 +1,26 @@
 # Nowstr
 
-Spotify で再生中の曲を、Nostr のステータス（[NIP-38](https://github.com/nostr-protocol/nips/blob/master/38.md) の music status）として自動で設定する、1枚だけのウェブページです。
+Spotify または YouTube Music で再生中の曲を、Nostr のステータス（[NIP-38](https://github.com/nostr-protocol/nips/blob/master/38.md) の music status）として自動で設定する、1枚だけのウェブページです。
 
-- Nowstr のタブを開いておくと、Spotify アプリのデバイス一覧に「Nowstr」が表示されます
-- 再生操作・プレイリストの選択などは、いつもどおり **Spotify 公式アプリ**から行います
-- Nowstr デバイスで再生した曲の開始・変更・一時停止・再開に合わせて、`kind:30315` / `d=music` の status を publish / clear します
+- **Spotify**: Nowstr のタブが Spotify アプリのデバイス一覧に「Nowstr」として表示されます。再生操作は、いつもどおり Spotify 公式アプリから行います
+- **YouTube Music**: ブラウザ拡張「[Nowstr Bridge](#youtube-music-連携)」が、ブラウザで開いている YouTube Music のタブから再生中の曲を Nowstr に届けます
+- 曲の開始・変更・一時停止・再開に合わせて、`kind:30315` / `d=music` の status を publish / clear します
 - バックエンドなしの静的な1ページです（`dist/` をそのまま配信できます）
+- Spotify の Client ID をビルド時に設定しなければ、Spotify の導線は表示されず YouTube Music 専用になります
 
 > [!IMPORTANT]
-> Nowstr は **各自が自分の Spotify Developer App を作り、自分でホスティングして使う**ことを前提にしています。
+> Spotify 連携を使う場合、Nowstr は **各自が自分の Spotify Developer App を作り、自分でホスティングして使う**ことを前提にしています。
 > 理由は [Spotify の規約について](#spotify-の規約について) を参照してください。
 
 ## 必要環境
 
-| 項目     | 要件                                                                          |
-| -------- | ----------------------------------------------------------------------------- |
-| ブラウザ | デスクトップ版 Chromium 系（Chrome / Edge）推奨                               |
-| Spotify  | **Spotify Premium アカウント**（Web Playback SDK と Development Mode の要件） |
-| Nostr    | **NIP-07 対応のブラウザ拡張**（nos2x, Alby, AKA Profiles など）               |
-| 開発     | Node.js 24 系, [Vite+](https://viteplus.dev/) (`vp`), pnpm                    |
+| 項目          | 要件                                                                          |
+| ------------- | ----------------------------------------------------------------------------- |
+| ブラウザ      | デスクトップ版 Chromium 系（Chrome / Edge）推奨                               |
+| Spotify       | **Spotify Premium アカウント**（Web Playback SDK と Development Mode の要件） |
+| YouTube Music | ブラウザ拡張 **Nowstr Bridge**（[YouTube Music 連携](#youtube-music-連携)）   |
+| Nostr         | **NIP-07 対応のブラウザ拡張**（nos2x, Alby, AKA Profiles など）               |
+| 開発          | Node.js 24 系, [Vite+](https://viteplus.dev/) (`vp`), pnpm                    |
 
 - Nostr 未接続でも Spotify の再生はできます（status の投稿だけが無効になります）。
 - Nowstr は Nostr の秘密鍵を一切扱いません。署名はすべて NIP-07 拡張に依頼します。
@@ -46,6 +48,38 @@ Spotify で再生中の曲を、Nostr のステータス（[NIP-38](https://gith
 
 - NIP-07 拡張で、Nowstr に対する kind:30315 の署名を「常に許可」にしておくと、確認ダイアログで止まりません。
 - Chrome のメモリセーバーで長時間一時停止したタブが破棄されることがあります。気になる場合は Nowstr のサイトを除外リストに追加してください。
+
+## YouTube Music 連携
+
+YouTube Music には「いま再生中の曲」を取得できる公式 API がありません。そのため、ブラウザ拡張 **Nowstr Bridge**（`extension/`）が、ブラウザで開いている YouTube Music のタブの表示内容から再生中の曲を読み取り、Nowstr のタブへ渡します。署名と投稿はこれまでどおり Nowstr のタブで行います。
+
+```text
+[music.youtube.com のタブ]  extension/youtube-music.js
+  navigator.mediaSession.metadata（曲名・アーティスト・アルバム・アートワーク）
+  <video>（再生中か・再生位置・長さ）、URL の ?v=（曲の URL）
+        ↓ chrome.runtime（extension/background.js が中継）
+[Nowstr のタブ]  extension/bridge.js → window.postMessage
+        ↓ src/youtube/extension-protocol.ts で検証
+  MusicStatusController → NIP-07 で署名 → relay
+```
+
+### Nowstr Bridge のインストール（プロトタイプ）
+
+Chrome ウェブストアには未公開なので、「パッケージ化されていない拡張機能」として読み込みます。
+
+1. このリポジトリを clone（またはダウンロード）する
+2. Chrome で `chrome://extensions` を開き、右上の **デベロッパー モード** をオンにする
+3. **パッケージ化されていない拡張機能を読み込む** から `extension/` フォルダを選ぶ
+4. Nowstr のページを再読み込みし、「はじめかた」で YouTube Music を選ぶ
+
+Nowstr を自分のドメインでホスティングする場合は、`extension/manifest.json` の `content_scripts` にある `bridge.js` の `matches` に、そのドメインを追加してください（既定では `https://nowstr.eyemono.moe/*` と `127.0.0.1` / `localhost` のみ）。
+
+### 制約と注意
+
+- 対象は、デスクトップブラウザで開いている YouTube Music（`music.youtube.com`）だけです。スマートフォンのアプリなどで再生している曲は取得できません。
+- 広告の再生中（`.ad-showing`）は曲として扱いません。広告中は mediaSession に広告の情報が入るためです。
+- MV など、アルバムがない曲はアルバム名が空になります。アートワークも動画のサムネイル（16:9）になることがあります。
+- YouTube 公式の連携方法ではありません。ユーザーが自分で開いているページの表示内容を読むだけで、YouTube のサーバーへの自動アクセスは行いませんが、YouTube Music の画面構成が変わると動かなくなる可能性があります。
 
 ## セルフホストの手順
 
@@ -83,14 +117,14 @@ Spotify で再生中の曲を、Nostr のステータス（[NIP-38](https://gith
 
 ### 2. 環境変数を設定する
 
-`.env.example` を `.env.local` にコピーして設定します。
+`.env.example` を `.env.local` にコピーして設定します。YouTube Music 連携だけを使う場合、設定は不要です（`VITE_SPOTIFY_CLIENT_ID` を空にすると Spotify の導線は表示されません）。
 
-| 変数                        | 必須 | 説明                                                                              |
-| --------------------------- | ---- | --------------------------------------------------------------------------------- |
-| `VITE_SPOTIFY_CLIENT_ID`    | ✓    | 自分の Spotify Developer App の Client ID                                         |
-| `VITE_SPOTIFY_REDIRECT_URI` |      | Redirect URI を固定したい場合のみ（既定: `${location.origin}/`）                  |
-| `VITE_SOURCE_URL`           |      | フッターに表示するソースコードの URL                                              |
-| `VITE_CONTACT_URL`          |      | プライバシーポリシーに表示する問い合わせ先（URL / `mailto:`）。既定はソースの URL |
+| 変数                        | 必須 | 説明                                                                                             |
+| --------------------------- | ---- | ------------------------------------------------------------------------------------------------ |
+| `VITE_SPOTIFY_CLIENT_ID`    |      | 自分の Spotify Developer App の Client ID（Spotify 連携に必須。空なら Spotify の導線を出さない） |
+| `VITE_SPOTIFY_REDIRECT_URI` |      | Redirect URI を固定したい場合のみ（既定: `${location.origin}/`）                                 |
+| `VITE_SOURCE_URL`           |      | フッターに表示するソースコードの URL                                                             |
+| `VITE_CONTACT_URL`          |      | プライバシーポリシーに表示する問い合わせ先（URL / `mailto:`）。既定はソースの URL                |
 
 ### 3. ビルド・デプロイする
 
@@ -181,7 +215,9 @@ src/
   nostr/     NostrSigner（NIP-07）, relay client（rx-nostr）
   status/    MusicStatusController
   state/     Solid の store（Spotify / Nostr / 設定 / toast）
+  youtube/   ブラウザ拡張とのメッセージ形式と検証
   ui/        コンポーネント（Ark UI + UnoCSS）, プライバシーポリシー
+extension/   ブラウザ拡張 Nowstr Bridge（YouTube Music の再生状態を Nowstr に渡す, Manifest V3）
 ```
 
 ## 永続化

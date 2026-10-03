@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.138",
+    "@types/chrome": "^0.3.4",
     "@types/node": "^24.13.3",
     "@types/spotify-web-playback-sdk": "^0.1.19",
     "@vitejs/plugin-basic-ssl": "^2.3.0",

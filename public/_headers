@@ -7,10 +7,10 @@
 #   万一スクリプトが混入しても、任意の https サーバーへトークンを送れないようにする
 #   （relay は利用者ごとに異なるため wss: 全体を許可している）
 # - frame-src: Web Playback SDK が再生用に埋め込む iframe
-# - img-src: アルバムアートワーク（Spotify の画像 CDN）と、UnoCSS のアイコン（data: URI）
+# - img-src: アルバムアートワーク（Spotify / YouTube Music の画像 CDN）と、UnoCSS のアイコン（data: URI）
 # - style-src: Ark UI / Solid が実行時に設定するインラインスタイルのため 'unsafe-inline'
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://sdk.scdn.co; connect-src 'self' https://api.spotify.com https://accounts.spotify.com wss:; frame-src https://sdk.scdn.co; img-src 'self' data: https://*.scdn.co https://*.spotifycdn.com; style-src 'self' 'unsafe-inline'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://sdk.scdn.co; connect-src 'self' https://api.spotify.com https://accounts.spotify.com wss:; frame-src https://sdk.scdn.co; img-src 'self' data: https://*.scdn.co https://*.spotifycdn.com https://*.googleusercontent.com https://*.ggpht.com https://i.ytimg.com; style-src 'self' 'unsafe-inline'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()

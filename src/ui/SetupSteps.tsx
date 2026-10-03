@@ -1,6 +1,8 @@
 import { type JSX, Match, Show, Switch } from "solid-js";
 import { shortenNpub, toNpub } from "../core/npub";
+import { SOURCE_URL } from "../lib/links";
 import { loginNostr, logoutNostr, nostr } from "../state/nostr";
+import { activeSource } from "../state/source";
 import {
   DEVICE_NAME,
   loginSpotify,
@@ -10,6 +12,7 @@ import {
   spotify,
   transferHere,
 } from "../state/spotify";
+import { extensionDetected, youtubePlayback } from "../state/youtube";
 
 const Step = (props: {
   index: number;
@@ -152,46 +155,130 @@ const LinkStep = () => {
   );
 };
 
+const Note = (props: { icon: string; children: JSX.Element }) => (
+  <li class="flex gap-2">
+    <div class={`${props.icon} mt-0.5 shrink-0`} />
+    <span>{props.children}</span>
+  </li>
+);
+
+const Notes = (props: { children: JSX.Element }) => (
+  <ul class="flex flex-col gap-1.5 border-t border-fg/10 pt-3 text-xs text-muted leading-relaxed">
+    {props.children}
+  </ul>
+);
+
+const StatusNote = () => (
+  <Note icon="i-lucide-zap">
+    このタブを開いている間、再生中の曲が Nostr
+    のステータスに表示されます。一時停止するとステータスは消えます。タブを閉じたときも消去を試みますが、消せなかった場合でも曲の終了予定時刻には自動で消えます。
+  </Note>
+);
+
 /**
- * はじめかた。手順の進み具合を表示しつつ、連携後も使い方の説明として残しておく。
- * 内部的には「再生をこのブラウザ（Nowstr デバイス）へ移す」操作だが、利用者にはその仕組みを意識させない。
+ * Spotify: 内部的には「再生をこのブラウザ（Nowstr デバイス）へ移す」操作だが、利用者にはその仕組みを意識させない。
  */
-export const SetupSteps = () => (
-  <section class="card flex flex-col gap-4">
-    <h2 class="font-semibold">はじめかた</h2>
+const SpotifySetup = () => (
+  <>
     <ol class="flex flex-col gap-4">
       <SpotifyStep />
       <NostrStep />
       <LinkStep />
     </ol>
-    <ul class="flex flex-col gap-1.5 border-t border-fg/10 pt-3 text-xs text-muted leading-relaxed">
-      <li class="flex gap-2">
-        <div class="i-lucide-volume-2 mt-0.5 shrink-0" />
-        <span>
-          連携中は、音がこのタブから流れます。曲の操作（再生・一時停止・曲送り・音量など）は、いつもどおり
-          Spotify アプリで行えます。
-        </span>
-      </li>
-      <li class="flex gap-2">
-        <div class="i-lucide-zap mt-0.5 shrink-0" />
-        <span>
-          このタブを開いている間、再生中の曲が Nostr
-          のステータスに表示されます。一時停止するとステータスは消えます。タブを閉じたときも消去を試みますが、消せなかった場合でも曲の終了予定時刻には自動で消えます。
-        </span>
-      </li>
-      <li class="flex gap-2">
-        <div class="i-lucide-repeat mt-0.5 shrink-0" />
-        <span>
-          Spotify アプリで再生先を別の端末に切り替えると、連携は止まります。再開するときは、Spotify
-          アプリの再生先の一覧から「{DEVICE_NAME}」を選ぶか、③ のボタンを押してください。
-        </span>
-      </li>
-    </ul>
-    <Show when={!spotify.configured}>
-      <p class="text-xs text-danger">
-        VITE_SPOTIFY_CLIENT_ID が設定されていません。README の手順で Spotify Developer App
-        を作成してください。
-      </p>
+    <Notes>
+      <Note icon="i-lucide-volume-2">
+        連携中は、音がこのタブから流れます。曲の操作（再生・一時停止・曲送り・音量など）は、いつもどおり
+        Spotify アプリで行えます。
+      </Note>
+      <StatusNote />
+      <Note icon="i-lucide-repeat">
+        Spotify アプリで再生先を別の端末に切り替えると、連携は止まります。再開するときは、Spotify
+        アプリの再生先の一覧から「{DEVICE_NAME}」を選ぶか、③ のボタンを押してください。
+      </Note>
+    </Notes>
+  </>
+);
+
+/** 拡張のインストール方法（Chrome ウェブストア公開前なので README の手順へ案内する） */
+const EXTENSION_GUIDE_URL = `${SOURCE_URL}#youtube-music-連携`;
+
+/**
+ * YouTube Music: 再生は YouTube Music のタブで普段どおり行い、
+ * ブラウザ拡張（Nowstr Bridge）が曲情報をこのタブへ届ける。
+ */
+const YouTubeMusicSetup = () => (
+  <>
+    <ol class="flex flex-col gap-4">
+      <Step
+        index={1}
+        done={extensionDetected() === true}
+        title="ブラウザ拡張をインストール"
+        status={
+          <Switch>
+            <Match when={extensionDetected() === true}>Nowstr Bridge を検出しました</Match>
+            <Match when={extensionDetected() === null}>確認中…</Match>
+            <Match when={extensionDetected() === false}>
+              YouTube Music の曲情報を受け取るために「Nowstr
+              Bridge」拡張が必要です。インストール後、このページを再読み込みしてください
+            </Match>
+          </Switch>
+        }
+        action={
+          <Show when={extensionDetected() !== true}>
+            <a
+              href={EXTENSION_GUIDE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn-primary px-3 py-1.5 text-sm"
+            >
+              入手方法
+            </a>
+          </Show>
+        }
+      />
+      <NostrStep />
+      <Step
+        index={3}
+        done={youtubePlayback() !== null}
+        title="YouTube Music で再生"
+        status={
+          youtubePlayback() !== null
+            ? "再生中の曲を受け取っています"
+            : "別のタブで YouTube Music を開いて、曲を再生してください"
+        }
+        action={
+          <a
+            href="https://music.youtube.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class={`${youtubePlayback() !== null ? "btn-secondary" : "btn-primary"} px-3 py-1.5 text-sm`}
+          >
+            <div class="i-lucide-external-link" />
+            開く
+          </a>
+        }
+      />
+    </ol>
+    <Notes>
+      <Note icon="i-lucide-monitor">
+        YouTube Music はいつもどおりブラウザのタブで使えます。この Nowstr
+        のタブも開いたままにしておいてください（署名と投稿はこのタブで行います）。
+      </Note>
+      <StatusNote />
+      <Note icon="i-lucide-smartphone">
+        読み取れるのは、このブラウザの YouTube Music
+        で再生している曲だけです（スマートフォンのアプリなどは対象外です）。
+      </Note>
+    </Notes>
+  </>
+);
+
+/** はじめかた。手順の進み具合を表示しつつ、連携後も使い方の説明として残しておく。 */
+export const SetupSteps = () => (
+  <section class="card flex flex-col gap-4">
+    <h2 class="font-semibold">はじめかた</h2>
+    <Show when={activeSource() === "spotify"} fallback={<YouTubeMusicSetup />}>
+      <SpotifySetup />
     </Show>
   </section>
 );
