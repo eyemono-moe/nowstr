@@ -40,6 +40,15 @@ const SITES = [
       "シークレットリンクで再生している曲や非公開の曲は、曲名だけを投稿してリンクは付けません",
     ],
   },
+  {
+    name: "Amazon Music",
+    url: "https://music.amazon.co.jp/",
+    notes: [
+      "ブラウザの Web Player（music.amazon.co.jp・music.amazon.com など）で再生している曲とポッドキャストが対象です",
+      "曲そのもののリンクが取れないため、曲名とアーティスト名での検索結果へのリンクを付けます",
+      "広告の再生中は投稿しません",
+    ],
+  },
 ];
 
 const Section = (props: { id: string; title: string; children: JSX.Element }) => (
@@ -97,7 +106,8 @@ const App = () => {
           <p class="text-2xl font-bold">いま聴いている曲を、Nostr に。</p>
           <p class="leading-relaxed">
             Nowstr は、ブラウザで再生している曲を Nostr
-            のステータスとして自動で投稿するブラウザ拡張です。YouTube Music・Spotify・SoundCloud
+            のステータスとして自動で投稿するブラウザ拡張です。YouTube
+            Music・Spotify・SoundCloud・Amazon Music
             のタブで曲を再生するだけで、ステータスが更新されます。
           </p>
           <ul class="flex flex-col gap-1.5 text-sm text-fg/80 leading-relaxed">
@@ -179,7 +189,8 @@ const App = () => {
               に投稿」をオンにします。投稿先の relay や「タブを閉じたら消す」もここで設定できます。
             </Step>
             <Step index={5} title="曲を再生する">
-              YouTube Music・Spotify・SoundCloud のタブで曲を再生します。はじめは、そのタブで NIP-07
+              YouTube Music・Spotify・SoundCloud・Amazon Music
+              のタブで曲を再生します。はじめは、そのタブで NIP-07
               拡張の確認が表示されるので許可してください。
             </Step>
           </Steps>

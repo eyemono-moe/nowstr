@@ -30,7 +30,7 @@ export const PrivacyPolicy = () => (
           <strong>再生中の曲の情報</strong>
           （曲名・アーティスト名・アルバム名・アートワークの URL・曲の
           URL・再生位置・長さ・再生/一時停止の状態）：このブラウザで開いている YouTube
-          Music・Spotify・SoundCloud
+          Music・Spotify・SoundCloud・Amazon Music
           のタブの状態から読み取り、ステータスの投稿とポップアップの表示に使います。各サービスのアカウント情報や再生履歴は取得しません。
         </li>
         <li>
@@ -64,8 +64,8 @@ export const PrivacyPolicy = () => (
         </li>
         <li>
           <strong>music status の投稿</strong>
-          ：曲名・アーティスト名・曲のリンク（open.spotify.com・music.youtube.com・soundcloud.com の
-          URL）・曲の終了予定時刻を、あなたの鍵で署名した<strong>公開イベント</strong>
+          ：曲名・アーティスト名・曲のリンク（open.spotify.com・music.youtube.com・soundcloud.com・music.amazon.co.jp
+          など の URL）・曲の終了予定時刻を、あなたの鍵で署名した<strong>公開イベント</strong>
           として、あなたの write relay（または fallback relay）に送信します。Nostr
           の性質上、この情報は誰でも閲覧でき、第三者が保存する可能性があります。限定公開・非公開の曲にはリンクを付けません。
         </li>

@@ -1,10 +1,11 @@
 /** 曲を再生している音楽サービス */
-export type MusicService = "youtube-music" | "spotify" | "soundcloud";
+export type MusicService = "youtube-music" | "spotify" | "soundcloud" | "amazon-music";
 
 export const MUSIC_SERVICE_LABELS: Record<MusicService, string> = {
   "youtube-music": "YouTube Music",
   spotify: "Spotify",
   soundcloud: "SoundCloud",
+  "amazon-music": "Amazon Music",
 };
 
 /**

@@ -1,7 +1,7 @@
 // content script 間・service worker との間で受け渡す型。
 // 再生状態は Nowstr 本体の src/core/playback.ts と同じ形（service worker はそちらの型を直接使う）。
 
-type BridgeSource = "youtube-music" | "spotify" | "soundcloud";
+type BridgeSource = "youtube-music" | "spotify" | "soundcloud" | "amazon-music";
 
 type BridgeTrack = {
   source: BridgeSource;

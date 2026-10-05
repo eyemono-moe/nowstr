@@ -2,7 +2,7 @@
 
 ブラウザで再生中の曲を、Nostr のステータス（[NIP-38](https://github.com/nostr-protocol/nips/blob/master/38.md) の music status）として自動で投稿するブラウザ拡張です。
 
-- **YouTube Music・Spotify（Web Player）・SoundCloud** のタブで曲を再生するだけで、ステータスが更新されます。Spotify は Web Player の画面から読むので、Spotify Free でも使えます
+- **YouTube Music・Spotify（Web Player）・SoundCloud・Amazon Music** のタブで曲を再生するだけで、ステータスが更新されます。Spotify は Web Player の画面から読むので、Spotify Free でも使えます
 - 曲の開始・変更・一時停止・再開に合わせて、`kind:30315` / `d=music` の status を publish / clear します（`r` タグには曲の URL を入れます）
 - 秘密鍵は扱いません。署名は NIP-07 対応のブラウザ拡張（nos2x, Alby など）に依頼します
 - 設定と状態の確認は、拡張のアイコンを押して開くポップアップで行います
@@ -25,7 +25,7 @@ Chrome ウェブストアには未公開なので、配布している zip を�
 2. `chrome://extensions` を開き、右上の **デベロッパー モード** をオンにする
 3. **パッケージ化されていない拡張機能を読み込む** から、展開したフォルダを選ぶ
 4. ツールバーの Nowstr のアイコンを押してポップアップを開き、**Nostr に投稿** をオンにする
-5. YouTube Music・Spotify・SoundCloud のタブで曲を再生する。はじめは、そのタブで NIP-07 拡張の確認が表示されるので許可する
+5. YouTube Music・Spotify・SoundCloud・Amazon Music のタブで曲を再生する。はじめは、そのタブで NIP-07 拡張の確認が表示されるので許可する
 
 ポップアップでは、再生中の曲・投稿の状態・公開鍵・投稿先 relay を確認でき、fallback relay と「タブを閉じたら消す」を設定できます。アイコンには、投稿中は「ON」、送信に失敗すると「!」が表示されます。
 
@@ -46,9 +46,11 @@ Chrome ウェブストアには未公開なので、配布している zip を�
 | YouTube Music | mediaSession.metadata | `<video>`                                          | 動画 ID（プレイヤーの `getVideoData()`）、限定公開の判定、広告（`.ad-showing`）の除外 |
 | Spotify       | mediaSession.metadata | document 外の media 要素（なければ再生バーの表示） | 曲の ID（再生バーの React の props から探す。なければアルバムのリンク）、広告の除外   |
 | SoundCloud    | mediaSession.metadata | document 外の `<audio>`                            | 曲の URL（再生バーのリンク）、非公開の曲の判定                                        |
+| Amazon Music  | mediaSession.metadata | document 外の `<audio>`                            | 曲へのリンクが取れないので検索結果の URL、広告（再生バーの `primary-href`）の除外     |
 
 - 対象は、このブラウザのタブで再生している曲だけです。スマートフォンのアプリや、Spotify Connect で他の端末から再生している曲は取得できません。
 - 広告の再生中は投稿しません（Spotify はアーティストのリンクがないことで判定します）。SoundCloud の音声広告は判定していません。
+- Amazon Music は、画面にも曲（ASIN）へのリンクがないため、曲名とアーティスト名での検索結果へのリンクを付けます。
 - MV など、アルバムがない曲はアルバム名が空になります。
 - 各サービス公式の連携方法ではありません。ユーザーが自分で開いているページの状態を読むだけで、各サービスのサーバーへの自動アクセスは行いません。曲名と再生状態は標準の mediaSession と media 要素から読むので比較的壊れにくいですが、画面構成が変わると曲の URL などが取れなくなる可能性があります。
 - 拡張を入れ直した直後は、次に再生・一時停止・曲送りをしたときから読み取りが始まることがあります。

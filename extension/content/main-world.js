@@ -86,12 +86,22 @@
     document.dispatchEvent(new CustomEvent("nowstr:media"));
   };
 
+  /** 覚えておく要素の数。使い捨てで作られる要素がたまらないよう、再生を始めた順に古いものから忘れる */
+  const MAX_ELEMENTS = 8;
+
   /** @param {HTMLMediaElement} element */
   const track = (element) => {
     if (!elements.has(element)) {
       for (const type of MEDIA_EVENTS) element.addEventListener(type, notify);
     }
+    // play() の直後は currentSrc も duration もまだ空のことがある（Amazon Music）ので、ここでは選別しない
+    elements.delete(element);
     elements.set(element, Date.now());
+    for (const old of elements.keys()) {
+      if (elements.size <= MAX_ELEMENTS) break;
+      for (const type of MEDIA_EVENTS) old.removeEventListener(type, notify);
+      elements.delete(old);
+    }
   };
 
   /** 再生中のものを優先し、なければ最後に再生を始めたもの */
@@ -105,11 +115,6 @@
     let best = null;
     let bestScore = -1;
     for (const [element, at] of elements) {
-      if (!element.isConnected && !element.currentSrc && !element.srcObject) {
-        // 捨てられた要素は覚えておかない
-        elements.delete(element);
-        continue;
-      }
       const usable = Number.isFinite(element.duration) && element.duration > 0;
       if (!usable) continue;
       const score = (element.paused ? 0 : 1e15) + at;
