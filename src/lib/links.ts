@@ -3,5 +3,8 @@ export const SOURCE_URL: string =
 
 export const CONTACT_URL: string = import.meta.env.VITE_CONTACT_URL || SOURCE_URL;
 
-/** Spotify アカウント側で Nowstr のアクセス権を取り消すページ */
-export const SPOTIFY_APPS_URL = "https://www.spotify.com/account/apps/";
+/** 拡張の配布ページ（Chrome ウェブストア公開前なので GitHub Release の zip） */
+export const RELEASES_URL = `${SOURCE_URL}/releases/latest`;
+
+/** 最新の拡張の zip（Release に常に同じ名前で添付している） */
+export const DOWNLOAD_URL = `${SOURCE_URL}/releases/latest/download/nowstr-extension.zip`;

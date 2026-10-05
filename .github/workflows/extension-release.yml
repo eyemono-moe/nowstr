@@ -1,11 +1,11 @@
-# Nowstr Bridge（ブラウザ拡張）の zip を作り、GitHub Release に添付する。
+# ブラウザ拡張 Nowstr の zip を作り、GitHub Release に添付する。
 #
 # 使い方: extension/manifest.json の version を上げてコミットし、同じ番号のタグを push する。
-#   git tag extension-v0.1.4 && git push origin extension-v0.1.4
+#   git tag extension-v0.3.0 && git push origin extension-v0.3.0
 #
-# 添付するファイル名は常に nowstr-bridge.zip にしているので、
-# https://github.com/<owner>/<repo>/releases/latest/download/nowstr-bridge.zip で最新版を取得できる。
-name: Release Nowstr Bridge
+# 添付するファイル名は常に nowstr-extension.zip にしているので、
+# https://github.com/<owner>/<repo>/releases/latest/download/nowstr-extension.zip で最新版を取得できる。
+name: Release Nowstr extension
 
 on:
   push:
@@ -30,19 +30,32 @@ jobs:
           fi
           echo "VERSION=$manifest" >> "$GITHUB_ENV"
 
+      # service worker とポップアップは TypeScript で書いているのでビルドする
+      - uses: pnpm/action-setup@v4
+        with:
+          # package.json の devEngines.packageManager と揃える
+          version: 12.8.1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build service worker and popup
+        run: pnpm exec vp build --config vite.extension.config.ts
+
       - name: Pack extension
-        run: cd extension && zip -qr ../nowstr-bridge.zip . -x types.d.ts
+        run: cd extension && zip -qr ../nowstr-extension.zip . -x 'src/*' content/types.d.ts
 
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" nowstr-bridge.zip \
-            --title "Nowstr Bridge v$VERSION" \
-            --notes "YouTube Music で再生中の曲を Nowstr に渡すブラウザ拡張です。
+          gh release create "$GITHUB_REF_NAME" nowstr-extension.zip \
+            --title "Nowstr v$VERSION" \
+            --notes "YouTube Music・Spotify・SoundCloud で再生中の曲を、Nostr のステータスとして掲示するブラウザ拡張です。
 
           インストール方法:
-          1. 下の **nowstr-bridge.zip** をダウンロードして展開する
+          1. 下の **nowstr-extension.zip** をダウンロードして展開する
           2. \`chrome://extensions\` を開き、右上の「デベロッパー モード」をオンにする
           3. 「パッケージ化されていない拡張機能を読み込む」から、展開したフォルダを選ぶ
 

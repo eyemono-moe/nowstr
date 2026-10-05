@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>Nowstr</title>
+    <link rel="stylesheet" href="popup.css" />
+    <script type="module" src="../dist/popup.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Nowstr</h1>
+      <span id="version" class="muted"></span>
+    </header>
+
+    <section class="card" id="playing">
+      <p class="label" id="playing-source">再生中の曲</p>
+      <p id="playing-title" class="title">なし</p>
+      <p id="playing-sub" class="muted small"></p>
+    </section>
+
+    <section class="card">
+      <label class="row">
+        <span>
+          <span class="strong">Nostr に投稿</span>
+          <span class="muted small block">再生中の曲を Nostr のステータスとして投稿します</span>
+        </span>
+        <input type="checkbox" id="enabled" class="switch" />
+      </label>
+      <div id="status" class="status small">
+        <span id="status-dot" class="dot"></span>
+        <span id="status-text"></span>
+      </div>
+      <p id="pubkey" class="muted small mono"></p>
+      <p id="error" class="danger small" hidden></p>
+    </section>
+
+    <section class="card">
+      <label class="row">
+        <span>
+          <span class="strong">タブを閉じたら消す</span>
+          <span class="muted small block">曲ごとに、消去用のイベントにも署名しておきます</span>
+        </span>
+        <input type="checkbox" id="clear-on-close" class="switch" />
+      </label>
+    </section>
+
+    <details class="card">
+      <summary class="strong">relay</summary>
+      <p id="relay-source" class="muted small"></p>
+      <ul id="relays" class="mono small"></ul>
+      <label for="fallback" class="strong small">fallback relay</label>
+      <p class="muted small">relay list (NIP-65) が見つからないときに使います。1行に1つ。</p>
+      <textarea id="fallback" rows="3" spellcheck="false"></textarea>
+      <div class="actions">
+        <span id="saved" class="muted small" hidden>保存しました</span>
+        <button type="button" id="save" class="btn">保存</button>
+      </div>
+    </details>
+
+    <footer class="small">
+      <a href="https://nowstr.eyemono.moe/" target="_blank" rel="noopener noreferrer">使い方</a>
+      <a href="https://nowstr.eyemono.moe/#privacy" target="_blank" rel="noopener noreferrer">
+        プライバシーポリシー
+      </a>
+    </footer>
+  </body>
+</html>

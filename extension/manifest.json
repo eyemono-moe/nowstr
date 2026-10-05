@@ -1,46 +1,65 @@
 {
   "manifest_version": 3,
-  "name": "Nowstr Bridge",
-  "version": "0.1.4",
-  "description": "YouTube Music で再生中の曲を Nowstr に渡し、Nostr のステータスとして掲示できるようにします。",
+  "name": "Nowstr",
+  "version": "0.3.0",
+  "description": "YouTube Music・Spotify・SoundCloud で再生中の曲を、Nostr のステータス（NIP-38）として自動で投稿します。",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
   },
-  "background": {
-    "service_worker": "background.js"
+  "action": {
+    "default_title": "Nowstr",
+    "default_popup": "popup/popup.html"
   },
-  "permissions": ["scripting"],
+  "background": {
+    "service_worker": "dist/background.js",
+    "type": "module"
+  },
+  "permissions": ["scripting", "storage"],
   "host_permissions": [
     "https://music.youtube.com/*",
-    "https://nowstr.eyemono.moe/*",
-    "https://127.0.0.1:*/*",
-    "http://127.0.0.1:*/*",
-    "http://localhost:*/*"
+    "https://open.spotify.com/*",
+    "https://soundcloud.com/*"
   ],
   "content_scripts": [
     {
+      "matches": [
+        "https://music.youtube.com/*",
+        "https://open.spotify.com/*",
+        "https://soundcloud.com/*"
+      ],
+      "js": ["content/main-world.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
       "matches": ["https://music.youtube.com/*"],
-      "js": ["youtube-music-main.js"],
+      "js": ["content/sources/youtube-music-main.js"],
       "run_at": "document_idle",
       "world": "MAIN"
     },
     {
       "matches": ["https://music.youtube.com/*"],
-      "js": ["youtube-music.js"],
+      "js": ["content/source.js", "content/sources/youtube-music.js"],
       "run_at": "document_idle"
     },
     {
-      "matches": [
-        "https://nowstr.eyemono.moe/*",
-        "https://127.0.0.1:*/*",
-        "http://127.0.0.1:*/*",
-        "http://localhost:*/*"
-      ],
-      "js": ["bridge.js"],
-      "run_at": "document_start"
+      "matches": ["https://open.spotify.com/*"],
+      "js": ["content/sources/spotify-main.js"],
+      "run_at": "document_idle",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://open.spotify.com/*"],
+      "js": ["content/source.js", "content/sources/spotify.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://soundcloud.com/*"],
+      "js": ["content/source.js", "content/sources/soundcloud.js"],
+      "run_at": "document_idle"
     }
   ]
 }

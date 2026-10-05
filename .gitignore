@@ -31,5 +31,5 @@ dist-ssr
 .env.*
 !.env.example
 
-# Nowstr Bridge の配布用 zip
-nowstr-bridge.zip
+# ブラウザ拡張の配布用 zip
+nowstr-extension.zip

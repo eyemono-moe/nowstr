@@ -1,5 +1,4 @@
 import { readFileSync } from "node:fs";
-import basicSsl from "@vitejs/plugin-basic-ssl";
 import UnoCSS from "unocss/vite";
 import { defineConfig, lazyPlugins, loadEnv, type Plugin } from "vite-plus";
 import solid from "vite-plugin-solid";
@@ -32,10 +31,7 @@ const siteMeta = (siteUrl: string | undefined): Plugin => ({
   },
 });
 
-/**
- * 同じコミットの拡張のバージョンを最新版としてページに埋め込み、古い拡張を使っている人に更新を案内する。
- * そのため、拡張のバージョンを上げたら Release を作ってからデプロイすること。
- */
+/** 同じコミットの拡張のバージョンを、インストール方法の説明に最新版として表示する */
 const extensionVersion: string = JSON.parse(
   readFileSync(new URL("./extension/manifest.json", import.meta.url), "utf8"),
 ).version;
@@ -53,7 +49,7 @@ export default defineConfig(({ mode }) => ({
     options: { typeAware: true, typeCheck: true },
   },
   test: {
-    include: ["src/**/*.test.ts"],
+    include: ["src/**/*.test.ts", "extension/**/*.test.ts"],
     // 単体テストは DOM 非依存の純粋ロジックのみなので jsdom は不要。
     environment: "node",
   },
@@ -61,21 +57,20 @@ export default defineConfig(({ mode }) => ({
     tasks: {
       typecheck: { command: "vp check --no-fmt --no-lint", cache: false },
       deploy: { command: "vp build && wrangler deploy", cache: false },
-      // ブラウザ拡張 Nowstr Bridge を配布用の zip にする（Release は .github/workflows/extension-release.yml で作る）
+      // ブラウザ拡張 Nowstr の service worker とポップアップをビルドする（extension/dist/）。
+      // 拡張を「パッケージ化されていない拡張機能」として読み込む前に一度実行する（--watch で変更を追いかける）
+      "build:extension": { command: "vp build --config vite.extension.config.ts", cache: false },
+      // 配布用の zip にする（Release は .github/workflows/extension-release.yml で作る）
       "pack:extension": {
         command:
-          "rm -f nowstr-bridge.zip && cd extension && zip -qr ../nowstr-bridge.zip . -x types.d.ts",
+          "vp run build:extension && rm -f nowstr-extension.zip && cd extension && zip -qr ../nowstr-extension.zip . -x 'src/*' content/types.d.ts",
         cache: false,
       },
     },
   },
-  // - Spotify は redirect URI に `localhost` を許可しないため、ループバック IP で待ち受ける。
-  // - NIP-07 拡張には https（と http://localhost）でしか window.nostr を注入しないものがある
-  //   （AKA Profiles など）ため、自己署名証明書で HTTPS にする。
   server: { host: "127.0.0.1", port: 5173, strictPort: true },
   preview: { host: "127.0.0.1", port: 4173, strictPort: true },
   plugins: lazyPlugins(() => [
-    basicSsl({ name: "nowstr-dev" }),
     UnoCSS(),
     solid(),
     siteMeta(loadEnv(mode, process.cwd(), "VITE_").VITE_SITE_URL),

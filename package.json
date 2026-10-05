@@ -2,7 +2,7 @@
   "name": "nowstr",
   "version": "0.0.0",
   "private": true,
-  "description": "Spotify で再生中の曲を Nostr の music status (NIP-38) として自動で設定するウェブページ",
+  "description": "ブラウザで再生中の曲を Nostr の music status (NIP-38) として自動で投稿するブラウザ拡張と、その案内ページ",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -10,7 +10,6 @@
   },
   "type": "module",
   "dependencies": {
-    "@ark-ui/solid": "^5.39.2",
     "@rx-nostr/crypto": "^3.1.6",
     "@scure/base": "^2.4.0",
     "rx-nostr": "^3.7.7",
@@ -21,8 +20,6 @@
     "@iconify-json/lucide": "^1.2.138",
     "@types/chrome": "^0.3.4",
     "@types/node": "^24.13.3",
-    "@types/spotify-web-playback-sdk": "^0.1.19",
-    "@vitejs/plugin-basic-ssl": "^2.3.0",
     "typescript": "~6.0.2",
     "unocss": "^66.10.5",
     "vite": "catalog:",
