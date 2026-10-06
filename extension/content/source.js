@@ -17,7 +17,7 @@
 
 /**
  * 音楽サービスのタブで、再生状態の読み取りと service worker との通信を始める。
- * 同じ content_scripts のエントリに入れたファイル間ではグローバルを共有するので、sources/*.js から呼べる。
+ * 同じエントリ（services.ts の contentScriptsFor）に入れたファイル間ではグローバルを共有するので、sources/*.js から呼べる。
  * @param {MusicSourceAdapter} adapter
  */
 // oxlint-disable-next-line no-unused-vars -- sources/*.js から呼ぶ
@@ -161,6 +161,11 @@ function defineMusicSource(adapter) {
 
   /** @param {BridgeWorkerMessage} message */
   function onPortMessage(message) {
+    // ポップアップでこのサービスの許可が外された
+    if (message?.type === "stop") {
+      stop();
+      return;
+    }
     if (message?.type !== "nip07") return;
     const { id, method, params } = message;
     pendingNip07.set(id, (response) => {

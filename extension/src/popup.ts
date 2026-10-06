@@ -5,6 +5,7 @@
 import type { PublisherConfig, PublisherInfo } from "./protocol";
 import { MUSIC_SERVICE_LABELS, type PlaybackState } from "./core/playback";
 import { shortenNpub, toNpub } from "./core/npub";
+import { grantedServices, SERVICES } from "./services";
 import type { StatusPhase } from "./status/music-status-controller";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -22,6 +23,8 @@ const PHASE_LABELS: Record<StatusPhase, string> = {
 };
 
 let info: PublisherInfo | null = null;
+let grantedCount = 0;
+let lastPlayback: PlaybackState | null = null;
 let fallbackEdited = false;
 
 $("version").textContent = `v${chrome.runtime.getManifest().version}`;
@@ -34,12 +37,15 @@ const configure = (patch: Partial<PublisherConfig>) => {
 };
 
 const renderPlayback = (state: PlaybackState | null) => {
+  lastPlayback = state;
   const track = state?.track;
   $("playing-source").textContent = track ? MUSIC_SERVICE_LABELS[track.source] : "再生中の曲";
   $("playing-title").textContent = track ? track.title : "なし";
   $("playing-sub").textContent = track
     ? `${track.artists.join(", ")}${state.paused ? "（一時停止中）" : ""}`
-    : "YouTube Music・Spotify・SoundCloud・Amazon Music・Nintendo Music のタブで再生すると表示されます";
+    : grantedCount === 0
+      ? "「使うサービス」をオンにしてください"
+      : "オンにしたサービスのタブで再生すると表示されます";
 };
 
 const renderPublisher = (next: PublisherInfo) => {
@@ -97,4 +103,39 @@ $("save").addEventListener("click", () => {
   $("saved").hidden = false;
 });
 
+/**
+ * サービスごとのスイッチ。オン・オフはサイトへのアクセス権限そのもの（services.ts）。
+ * 権限の確認ダイアログでポップアップが閉じることがあるが、登録は service worker が permissions.onAdded で行う。
+ */
+const renderServices = async () => {
+  const granted = new Set((await grantedServices()).map((service) => service.id));
+  grantedCount = granted.size;
+  $("services").replaceChildren(
+    ...SERVICES.map((service) => {
+      const row = document.createElement("label");
+      row.className = "row";
+      const name = document.createElement("span");
+      name.textContent = service.label;
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.className = "switch";
+      input.checked = granted.has(service.id);
+      input.addEventListener("change", () => {
+        // 権限の要求はクリックの処理の中で同期的に始める必要がある
+        const request = input.checked
+          ? chrome.permissions.request({ origins: service.matches })
+          : chrome.permissions.remove({ origins: service.matches });
+        void request.finally(() => void renderServices());
+      });
+      row.append(name, input);
+      return row;
+    }),
+  );
+  renderPlayback(lastPlayback);
+};
+
+chrome.permissions.onAdded.addListener(() => void renderServices());
+chrome.permissions.onRemoved.addListener(() => void renderServices());
+
 renderPlayback(null);
+void renderServices();

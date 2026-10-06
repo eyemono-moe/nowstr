@@ -224,3 +224,10 @@ footer {
 footer a {
   color: var(--muted);
 }
+
+.services {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}

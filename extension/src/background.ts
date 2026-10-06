@@ -11,13 +11,24 @@
 // - タブを閉じた・別のページへ移動した: tabs.onRemoved / tabs.onUpdated で起こされる
 // 起こされたら、開いている音楽サービスのタブに状態を聞き直してから判断する（discoverPlayers）。
 // 投稿の続きに必要なもの（掲示中の status など）は ExtensionPublisher が chrome.storage.local に保存する。
+//
+// サイトへのアクセス権限はサービスごとにポップアップで求める（services.ts）。
+// 許可されたサービスにだけ content script を登録し、許可を外されたら登録を消して、そのタブのスクリプトも止める。
 
 import type { PlaybackState } from "./core/playback";
 import { parsePublisherConfig, type PublisherInfo } from "./protocol";
 import { ExtensionPublisher } from "./publisher";
+import {
+  contentScriptsFor,
+  grantedServices,
+  SERVICES,
+  type ServiceDefinition,
+  serviceForUrl,
+} from "./services";
 import { TabSigner } from "./tab-signer";
 
 type Player = {
+  service: ServiceDefinition["id"];
   port: chrome.runtime.Port;
   signer: TabSigner;
   state: PlaybackState | null;
@@ -69,8 +80,6 @@ const publisherReady = ExtensionPublisher.load({
   },
 });
 
-/** 音楽サービスのタブの URL（manifest の host_permissions） */
-const PLAYER_URLS = chrome.runtime.getManifest().host_permissions ?? [];
 const DISCOVERY_TIMEOUT_MS = 3_000;
 
 /**
@@ -78,7 +87,9 @@ const DISCOVERY_TIMEOUT_MS = 3_000;
  * service worker が作り直された直後は、どのタブで何を再生しているか分からないため。
  */
 const discoverPlayers = async (): Promise<void> => {
-  const tabs = await chrome.tabs.query({ url: PLAYER_URLS }).catch(() => []);
+  const urls = (await grantedServices()).flatMap((service) => service.matches);
+  if (urls.length === 0) return;
+  const tabs = await chrome.tabs.query({ url: urls }).catch(() => []);
   const asks = tabs.flatMap((tab) =>
     tab.id === undefined || tab.discarded
       ? []
@@ -105,11 +116,25 @@ const onStateChange = () => {
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name === "player") {
     const tabId = port.sender?.tab?.id;
-    if (tabId === undefined) return;
+    const service = serviceForUrl(port.sender?.url);
+    if (tabId === undefined || !service) {
+      port.disconnect();
+      return;
+    }
     // 同じタブで古いポートがつながっていたら置き換える
     players.get(tabId)?.signer.dispose();
-    const player: Player = { port, signer: new TabSigner(port), state: null, at: Date.now() };
+    const player: Player = {
+      service: service.id,
+      port,
+      signer: new TabSigner(port),
+      state: null,
+      at: Date.now(),
+    };
     players.set(tabId, player);
+    // 許可を外したあとも、外す前から開いていたタブのスクリプトはつないでくることがあるので確かめる
+    void grantedServices().then((granted) => {
+      if (!granted.some((item) => item.id === service.id)) stopPlayers([service.id]);
+    });
     port.onMessage.addListener((message: BridgePlayerMessage) => {
       if (message?.type === "playback") {
         player.state = message.state;
@@ -163,30 +188,81 @@ chrome.runtime.onStartup.addListener(() => {});
 void publisherReady.then((publisher) => updateBadge(publisher.info()));
 void sync();
 
-// 拡張をインストール・更新した時点ですでに開いているタブには、manifest の content script が入らない
-// （タブを再読み込みするまで動かない）。そのため、該当するタブには自分で注入する。
-const injectIntoOpenTabs = async () => {
-  for (const script of chrome.runtime.getManifest().content_scripts ?? []) {
-    if (!script.matches || !script.js) continue;
-    const tabs = await chrome.tabs.query({ url: script.matches });
+/** 許可を外されたサービスのタブのスクリプトを止め、そのタブの再生状態を忘れる（掲示中の status は消える） */
+const stopPlayers = (ids: ServiceDefinition["id"][]) => {
+  let changed = false;
+  for (const [tabId, player] of players) {
+    if (!ids.includes(player.service)) continue;
+    try {
+      player.port.postMessage({ type: "stop" });
+      player.port.disconnect();
+    } catch {
+      // 切断済み
+    }
+    player.signer.dispose();
+    players.delete(tabId);
+    changed = true;
+  }
+  if (changed) onStateChange();
+};
+
+/**
+ * 許可されているサービスに content script を登録し直す。
+ * 拡張の更新でスクリプトの構成が変わることがあるので、いったんすべて外してから登録する。
+ */
+const registerContentScripts = async (): Promise<ServiceDefinition[]> => {
+  const ours = new Set(
+    SERVICES.flatMap((service) => contentScriptsFor(service).map((script) => script.id)),
+  );
+  const registered = await chrome.scripting.getRegisteredContentScripts();
+  const stale = registered.filter((script) => ours.has(script.id)).map((script) => script.id);
+  if (stale.length > 0) await chrome.scripting.unregisterContentScripts({ ids: stale });
+  const granted = await grantedServices();
+  if (granted.length > 0) {
+    await chrome.scripting.registerContentScripts(granted.flatMap(contentScriptsFor));
+  }
+  return granted;
+};
+
+/**
+ * すでに開いているタブには、登録した content script が入らない（タブを再読み込みするまで動かない）。
+ * 拡張のインストール・更新時と、サービスを許可したときに、自分で注入する。
+ */
+const injectIntoOpenTabs = async (services: ServiceDefinition[]) => {
+  for (const service of services) {
+    const tabs = await chrome.tabs.query({ url: service.matches }).catch(() => []);
     for (const tab of tabs) {
       if (tab.id === undefined || tab.discarded) continue;
-      const tabId = tab.id;
-      chrome.scripting
-        .executeScript({
-          target: { tabId },
-          files: script.js,
-          // MAIN world の補助スクリプト（main-world.js など）はページ側で動かす
-          // @types/chrome の manifest 型に world がないため、ここだけ型を広げて読む
-          world: (script as { world?: string }).world === "MAIN" ? "MAIN" : "ISOLATED",
-        })
-        .catch(() => {
-          // 読み込み中のタブなどには注入できないことがある（その場合は再読み込みで動く）
-        });
+      const target = { tabId: tab.id };
+      // 登録したものと同じ順（main-world.js → 補助スクリプト → adapter）で入れる
+      for (const script of contentScriptsFor(service)) {
+        await chrome.scripting
+          .executeScript({ target, files: script.js ?? [], world: script.world ?? "ISOLATED" })
+          .catch(() => {
+            // 読み込み中のタブなどには注入できないことがある（その場合は再読み込みで動く）
+          });
+      }
     }
   }
 };
 
 chrome.runtime.onInstalled.addListener(() => {
-  void injectIntoOpenTabs();
+  void registerContentScripts().then(injectIntoOpenTabs);
+});
+
+// ポップアップでサービスを許可した・外した（Chrome の設定画面から外した場合も届く）
+chrome.permissions.onAdded.addListener((permissions) => {
+  void registerContentScripts().then((granted) => {
+    const added = granted.filter((service) =>
+      service.matches.some((pattern) => permissions.origins?.includes(pattern)),
+    );
+    void injectIntoOpenTabs(added);
+  });
+});
+chrome.permissions.onRemoved.addListener((permissions) => {
+  const removed = SERVICES.filter((service) =>
+    service.matches.some((pattern) => permissions.origins?.includes(pattern)),
+  );
+  stopPlayers(removed.map((service) => service.id));
+  void registerContentScripts();
 });

@@ -24,10 +24,10 @@ Chrome ウェブストアには未公開なので、配布している zip を�
 1. [Releases](https://github.com/eyemono-moe/nowstr/releases/latest) から **nowstr-extension.zip** をダウンロードして展開する（[直接ダウンロード](https://github.com/eyemono-moe/nowstr/releases/latest/download/nowstr-extension.zip)）
 2. `chrome://extensions` を開き、右上の **デベロッパー モード** をオンにする
 3. **パッケージ化されていない拡張機能を読み込む** から、展開したフォルダを選ぶ
-4. ツールバーの Nowstr のアイコンを押してポップアップを開き、**Nostr に投稿** をオンにする
+4. ツールバーの Nowstr のアイコンを押してポップアップを開き、**使うサービス** で聴いているサービスをオンにして（そのサイトへのアクセスの許可を求められます）、**Nostr に投稿** をオンにする
 5. YouTube Music・Spotify・SoundCloud・Amazon Music・Nintendo Music のタブで曲を再生する。はじめは、そのタブで NIP-07 拡張の確認が表示されるので許可する
 
-ポップアップでは、再生中の曲・投稿の状態・公開鍵・投稿先 relay を確認でき、fallback relay と「タブを閉じたら消す」を設定できます。アイコンには、投稿中は「ON」、送信に失敗すると「!」が表示されます。
+ポップアップでは、再生中の曲・投稿の状態・公開鍵・投稿先 relay を確認でき、使うサービス・fallback relay・「タブを閉じたら消す」を設定できます。サイトへのアクセスは、オンにしたサービスにだけ許可します（インストール時にはどのサイトの権限も求めません）。アイコンには、投稿中は「ON」、送信に失敗すると「!」が表示されます。
 
 - 展開したフォルダは削除しないでください（Chrome はそのフォルダから拡張を読み込み続けます）。
 - 更新するときは、フォルダの中身を新しい zip の内容に置き換えて、`chrome://extensions` で拡張の再読み込みボタンを押してください。自動更新はされません。

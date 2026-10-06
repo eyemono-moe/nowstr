@@ -29,12 +29,10 @@ type BridgePlayerMessage =
   | { type: "nip07-result"; id: string; result?: unknown; error?: string };
 
 /** service worker → content script（"player" ポート） */
-type BridgeWorkerMessage = {
-  type: "nip07";
-  id: string;
-  method: "getPublicKey" | "signEvent";
-  params?: unknown;
-};
+type BridgeWorkerMessage =
+  | { type: "nip07"; id: string; method: "getPublicKey" | "signEvent"; params?: unknown }
+  /** サービスの許可が外されたので止まる */
+  | { type: "stop" };
 
 /** main-world.js が <html data-nowstr-media> に書く、再生中の media 要素の状態 */
 type MediaSnapshot = { paused: boolean; positionMs: number; durationMs: number };
@@ -64,7 +62,7 @@ type SourceReading = {
 
 /**
  * 音楽サービス1つぶんの読み取り方。sources/*.js で defineMusicSource() に渡す。
- * 対象サイトかどうかは manifest.json の content_scripts の matches で決める。
+ * 対象サイトかどうかは extension/src/services.ts の matches で決める。
  */
 type MusicSourceAdapter = {
   source: BridgeSource;

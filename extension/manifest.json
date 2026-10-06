@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Nowstr",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "YouTube Music・Spotify・SoundCloud・Amazon Music・Nintendo Music で再生中の曲を、Nostr のステータス（NIP-38）として自動で投稿します。",
   "icons": {
     "16": "icons/icon-16.png",
@@ -18,7 +18,7 @@
     "type": "module"
   },
   "permissions": ["scripting", "storage"],
-  "host_permissions": [
+  "optional_host_permissions": [
     "https://music.youtube.com/*",
     "https://open.spotify.com/*",
     "https://soundcloud.com/*",
@@ -35,86 +35,5 @@
     "https://music.amazon.com.mx/*",
     "https://music.amazon.com.br/*",
     "https://music.nintendo.com/*"
-  ],
-  "content_scripts": [
-    {
-      "matches": [
-        "https://music.youtube.com/*",
-        "https://open.spotify.com/*",
-        "https://soundcloud.com/*",
-        "https://music.amazon.com/*",
-        "https://music.amazon.co.jp/*",
-        "https://music.amazon.co.uk/*",
-        "https://music.amazon.de/*",
-        "https://music.amazon.fr/*",
-        "https://music.amazon.it/*",
-        "https://music.amazon.es/*",
-        "https://music.amazon.ca/*",
-        "https://music.amazon.com.au/*",
-        "https://music.amazon.in/*",
-        "https://music.amazon.com.mx/*",
-        "https://music.amazon.com.br/*",
-        "https://music.nintendo.com/*"
-      ],
-      "js": ["content/main-world.js"],
-      "run_at": "document_start",
-      "world": "MAIN"
-    },
-    {
-      "matches": ["https://music.youtube.com/*"],
-      "js": ["content/sources/youtube-music-main.js"],
-      "run_at": "document_idle",
-      "world": "MAIN"
-    },
-    {
-      "matches": ["https://music.youtube.com/*"],
-      "js": ["content/source.js", "content/sources/youtube-music.js"],
-      "run_at": "document_idle"
-    },
-    {
-      "matches": ["https://open.spotify.com/*"],
-      "js": ["content/sources/spotify-main.js"],
-      "run_at": "document_idle",
-      "world": "MAIN"
-    },
-    {
-      "matches": ["https://open.spotify.com/*"],
-      "js": ["content/source.js", "content/sources/spotify.js"],
-      "run_at": "document_idle"
-    },
-    {
-      "matches": ["https://soundcloud.com/*"],
-      "js": ["content/source.js", "content/sources/soundcloud.js"],
-      "run_at": "document_idle"
-    },
-    {
-      "matches": [
-        "https://music.amazon.com/*",
-        "https://music.amazon.co.jp/*",
-        "https://music.amazon.co.uk/*",
-        "https://music.amazon.de/*",
-        "https://music.amazon.fr/*",
-        "https://music.amazon.it/*",
-        "https://music.amazon.es/*",
-        "https://music.amazon.ca/*",
-        "https://music.amazon.com.au/*",
-        "https://music.amazon.in/*",
-        "https://music.amazon.com.mx/*",
-        "https://music.amazon.com.br/*"
-      ],
-      "js": ["content/source.js", "content/sources/amazon-music.js"],
-      "run_at": "document_idle"
-    },
-    {
-      "matches": ["https://music.nintendo.com/*"],
-      "js": ["content/sources/nintendo-music-main.js"],
-      "run_at": "document_idle",
-      "world": "MAIN"
-    },
-    {
-      "matches": ["https://music.nintendo.com/*"],
-      "js": ["content/source.js", "content/sources/nintendo-music.js"],
-      "run_at": "document_idle"
-    }
   ]
 }
