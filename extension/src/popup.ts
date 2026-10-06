@@ -39,7 +39,7 @@ const renderPlayback = (state: PlaybackState | null) => {
   $("playing-title").textContent = track ? track.title : "なし";
   $("playing-sub").textContent = track
     ? `${track.artists.join(", ")}${state.paused ? "（一時停止中）" : ""}`
-    : "YouTube Music・Spotify・SoundCloud・Amazon Music のタブで再生すると表示されます";
+    : "YouTube Music・Spotify・SoundCloud・Amazon Music・Nintendo Music のタブで再生すると表示されます";
 };
 
 const renderPublisher = (next: PublisherInfo) => {

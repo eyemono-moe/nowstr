@@ -38,7 +38,9 @@ export const desiredMusicStatus = (state: PlaybackState | null): MusicStatus | n
   return {
     trackUri: track.uri,
     url: track.unlisted ? null : track.uri,
-    content: `${track.title} - ${track.artists.join(", ")}`,
+    // アーティストが分からない曲は「曲名 - 」にならないよう、曲名だけにする
+    content:
+      track.artists.length > 0 ? `${track.title} - ${track.artists.join(", ")}` : track.title,
     expiresAt: computeExpiration(state),
   };
 };

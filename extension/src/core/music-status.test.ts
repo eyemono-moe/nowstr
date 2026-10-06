@@ -70,6 +70,11 @@ describe("desiredMusicStatus", () => {
     expect(status?.trackUri).toBe("https://music.youtube.com/watch?v=abc");
   });
 
+  it("アーティストがなければ曲名だけにする", () => {
+    const state = playing({ track: { ...trackA, artists: [] } });
+    expect(desiredMusicStatus(state)?.content).toBe("Intergalactic");
+  });
+
   it("複数アーティストはカンマで連結する", () => {
     const state = playing({ track: { ...trackA, artists: ["A", "B"] } });
     expect(desiredMusicStatus(state)?.content).toBe("Intergalactic - A, B");

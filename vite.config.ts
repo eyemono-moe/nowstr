@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import UnoCSS from "unocss/vite";
 import { defineConfig, lazyPlugins, loadEnv, type Plugin } from "vite-plus";
 import solid from "vite-plugin-solid";
+import { SITE_NAMES } from "./src/lib/sites.ts";
 
 /**
  * OGP の og:url / og:image は絶対 URL でないと多くのサービスで表示されないため、
@@ -29,6 +30,12 @@ const siteMeta = (siteUrl: string | undefined): Plugin => ({
       { tag: "link", attrs: { rel: "canonical", href: `${base}/` }, injectTo: "head" },
     ];
   },
+});
+
+/** index.html の説明文（description / og:description）に、対応サービスの一覧（src/lib/sites.ts）を入れる */
+const siteNames = (): Plugin => ({
+  name: "nowstr-site-names",
+  transformIndexHtml: (html) => html.replaceAll("%NOWSTR_SITE_NAMES%", SITE_NAMES),
 });
 
 /** 同じコミットの拡張のバージョンを、インストール方法の説明に最新版として表示する */
@@ -74,5 +81,6 @@ export default defineConfig(({ mode }) => ({
     UnoCSS(),
     solid(),
     siteMeta(loadEnv(mode, process.cwd(), "VITE_").VITE_SITE_URL),
+    siteNames(),
   ]),
 }));

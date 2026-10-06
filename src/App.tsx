@@ -1,5 +1,6 @@
 import { For, type JSX, onMount } from "solid-js";
 import { DOWNLOAD_URL, RELEASES_URL } from "./lib/links";
+import { SITE_NAMES, SITES } from "./lib/sites";
 import { Footer } from "./ui/Footer";
 import { Logo } from "./ui/Logo";
 import { PrivacyPolicy } from "./ui/PrivacyPolicy";
@@ -13,43 +14,6 @@ import { PrivacyPolicy } from "./ui/PrivacyPolicy";
 
 /** 配布している最新の拡張のバージョン（ビルド時に extension/manifest.json から埋め込む） */
 const LATEST_VERSION = __LATEST_EXTENSION_VERSION__;
-
-const SITES = [
-  {
-    name: "YouTube Music",
-    url: "https://music.youtube.com/",
-    notes: [
-      "どのページ（ホーム・プレイリスト・ライブラリなど）で再生していても読み取れます",
-      "広告の再生中は投稿しません",
-      "限定公開・非公開の動画は、曲名だけを投稿してリンクは付けません",
-    ],
-  },
-  {
-    name: "Spotify",
-    url: "https://open.spotify.com/",
-    notes: [
-      "ブラウザの Web Player（open.spotify.com）で再生している曲が対象です。Spotify Free でも使えます",
-      "広告の再生中は投稿しません",
-      "スマートフォンのアプリなど、他の端末で再生している曲は対象外です",
-    ],
-  },
-  {
-    name: "SoundCloud",
-    url: "https://soundcloud.com/",
-    notes: [
-      "シークレットリンクで再生している曲や非公開の曲は、曲名だけを投稿してリンクは付けません",
-    ],
-  },
-  {
-    name: "Amazon Music",
-    url: "https://music.amazon.co.jp/",
-    notes: [
-      "ブラウザの Web Player（music.amazon.co.jp・music.amazon.com など）で再生している曲とポッドキャストが対象です",
-      "曲そのもののリンクが取れないため、曲名とアーティスト名での検索結果へのリンクを付けます",
-      "広告の再生中は投稿しません",
-    ],
-  },
-];
 
 const Section = (props: { id: string; title: string; children: JSX.Element }) => (
   <section id={props.id} class="flex scroll-mt-6 flex-col gap-4">
@@ -106,8 +70,7 @@ const App = () => {
           <p class="text-2xl font-bold">いま聴いている曲を、Nostr に。</p>
           <p class="leading-relaxed">
             Nowstr は、ブラウザで再生している曲を Nostr
-            のステータスとして自動で投稿するブラウザ拡張です。YouTube
-            Music・Spotify・SoundCloud・Amazon Music
+            のステータスとして自動で投稿するブラウザ拡張です。{SITE_NAMES}{" "}
             のタブで曲を再生するだけで、ステータスが更新されます。
           </p>
           <ul class="flex flex-col gap-1.5 text-sm text-fg/80 leading-relaxed">
@@ -189,8 +152,7 @@ const App = () => {
               に投稿」をオンにします。投稿先の relay や「タブを閉じたら消す」もここで設定できます。
             </Step>
             <Step index={5} title="曲を再生する">
-              YouTube Music・Spotify・SoundCloud・Amazon Music
-              のタブで曲を再生します。はじめは、そのタブで NIP-07
+              {SITE_NAMES} のタブで曲を再生します。はじめは、そのタブで NIP-07
               拡張の確認が表示されるので許可してください。
             </Step>
           </Steps>

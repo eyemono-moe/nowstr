@@ -1,4 +1,5 @@
 import { SOURCE_URL } from "../lib/links";
+import { SITE_NAMES } from "../lib/sites";
 
 export const Footer = () => (
   <footer class="flex flex-col items-center gap-2 border-t border-fg/10 pt-6 text-xs text-muted">
@@ -10,8 +11,6 @@ export const Footer = () => (
         ソースコード
       </a>
     </nav>
-    <p class="text-muted/70">
-      Nowstr は YouTube・Spotify・SoundCloud とは関係のない非公式のツールです。
-    </p>
+    <p class="text-muted/70">Nowstr は {SITE_NAMES} とは関係のない非公式のツールです。</p>
   </footer>
 );
