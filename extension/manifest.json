@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Nowstr",
-  "version": "0.6.0",
-  "description": "YouTube Music・Spotify・SoundCloud・Amazon Music・Nintendo Music で再生中の曲を、Nostr のステータス（NIP-38）として自動で投稿します。",
+  "version": "0.7.0",
+  "description": "YouTube Music・Spotify・SoundCloud・Amazon Music・Nintendo Music・Apple Music で再生中の曲を、Nostr のステータス（NIP-38）として自動で投稿します。",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",
@@ -34,6 +34,7 @@
     "https://music.amazon.in/*",
     "https://music.amazon.com.mx/*",
     "https://music.amazon.com.br/*",
-    "https://music.nintendo.com/*"
+    "https://music.nintendo.com/*",
+    "https://music.apple.com/*"
   ]
 }

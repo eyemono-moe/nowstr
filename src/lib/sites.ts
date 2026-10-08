@@ -61,6 +61,15 @@ export const SITES: Site[] = [
       "「曲名 - ゲーム名」として投稿し、曲の共有用リンクを付けます",
     ],
   },
+  {
+    name: "Apple Music",
+    url: "https://music.apple.com/",
+    linkHost: "music.apple.com",
+    notes: [
+      "ブラウザの Web Player（music.apple.com）で再生している曲が対象です",
+      "サインインせずに試聴（30 秒）している曲も投稿します",
+    ],
+  },
 ];
 
 /** 「YouTube Music・Spotify・…」 */

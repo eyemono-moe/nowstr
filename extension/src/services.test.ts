@@ -19,6 +19,7 @@ describe("serviceForUrl", () => {
   it("URL からサービスを求める", () => {
     expect(serviceForUrl("https://music.amazon.co.jp/albums/x")?.id).toBe("amazon-music");
     expect(serviceForUrl("https://open.spotify.com/")?.id).toBe("spotify");
+    expect(serviceForUrl("https://music.apple.com/jp/album/x/1")?.id).toBe("apple-music");
     expect(serviceForUrl("https://example.com/")).toBeNull();
     expect(serviceForUrl(undefined)).toBeNull();
   });

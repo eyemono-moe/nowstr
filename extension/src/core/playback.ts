@@ -4,7 +4,8 @@ export type MusicService =
   | "spotify"
   | "soundcloud"
   | "amazon-music"
-  | "nintendo-music";
+  | "nintendo-music"
+  | "apple-music";
 
 export const MUSIC_SERVICE_LABELS: Record<MusicService, string> = {
   "youtube-music": "YouTube Music",
@@ -12,6 +13,7 @@ export const MUSIC_SERVICE_LABELS: Record<MusicService, string> = {
   soundcloud: "SoundCloud",
   "amazon-music": "Amazon Music",
   "nintendo-music": "Nintendo Music",
+  "apple-music": "Apple Music",
 };
 
 /**

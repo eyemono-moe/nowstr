@@ -2,7 +2,7 @@
 
 ブラウザで再生中の曲を、Nostr のステータス（[NIP-38](https://github.com/nostr-protocol/nips/blob/master/38.md) の music status）として自動で投稿するブラウザ拡張です。
 
-- **YouTube Music・Spotify（Web Player）・SoundCloud・Amazon Music・Nintendo Music** のタブで曲を再生するだけで、ステータスが更新されます。Spotify は Web Player の画面から読むので、Spotify Free でも使えます
+- **YouTube Music・Spotify（Web Player）・SoundCloud・Amazon Music・Nintendo Music・Apple Music** のタブで曲を再生するだけで、ステータスが更新されます。Spotify は Web Player の画面から読むので、Spotify Free でも使えます
 - 曲の開始・変更・一時停止・再開に合わせて、`kind:30315` / `d=music` の status を publish / clear します（`r` タグには曲の URL を入れます）
 - 秘密鍵は扱いません。署名は NIP-07 対応のブラウザ拡張（nos2x, Alby など）に依頼します
 - 設定と状態の確認は、拡張のアイコンを押して開くポップアップで行います
@@ -25,7 +25,7 @@ Chrome ウェブストアには未公開なので、配布している zip を�
 2. `chrome://extensions` を開き、右上の **デベロッパー モード** をオンにする
 3. **パッケージ化されていない拡張機能を読み込む** から、展開したフォルダを選ぶ
 4. ツールバーの Nowstr のアイコンを押してポップアップを開き、**使うサービス** で聴いているサービスをオンにして（そのサイトへのアクセスの許可を求められます）、**Nostr に投稿** をオンにする
-5. YouTube Music・Spotify・SoundCloud・Amazon Music・Nintendo Music のタブで曲を再生する。はじめは、そのタブで NIP-07 拡張の確認が表示されるので許可する
+5. YouTube Music・Spotify・SoundCloud・Amazon Music・Nintendo Music・Apple Music のタブで曲を再生する。はじめは、そのタブで NIP-07 拡張の確認が表示されるので許可する
 
 ポップアップでは、再生中の曲・投稿の状態・公開鍵・投稿先 relay を確認でき、使うサービス・fallback relay・「タブを閉じたら消す」を設定できます。サイトへのアクセスは、オンにしたサービスにだけ許可します（インストール時にはどのサイトの権限も求めません）。アイコンには、投稿中は「ON」、送信に失敗すると「!」が表示されます。
 
@@ -48,6 +48,7 @@ Chrome ウェブストアには未公開なので、配布している zip を�
 | SoundCloud     | mediaSession.metadata                     | document 外の `<audio>`                            | 曲の URL（再生バーのリンク）、非公開の曲の判定                                                                                    |
 | Amazon Music   | mediaSession.metadata                     | document 外の `<audio>`                            | 曲へのリンクが取れないので検索結果の URL、広告（再生バーの `primary-href`）の除外                                                 |
 | Nintendo Music | mediaSession.metadata（ゲーム名は album） | `<video>` ではなく document 内の `<audio>`         | 曲の ID（再生バーの React の props から探す）で共有用リンク（`/shared/<言語>/<国>/tracks/<id>/`）。アーティストの代わりにゲーム名 |
+| Apple Music    | mediaSession.metadata                     | document 内の `<audio>`                            | 曲の URL（ページの MusicKit JS の `nowPlayingItem`）                                                                              |
 
 - 対象は、このブラウザのタブで再生している曲だけです。スマートフォンのアプリや、Spotify Connect で他の端末から再生している曲は取得できません。
 - 広告の再生中は投稿しません（Spotify はアーティストのリンクがないことで判定します）。SoundCloud の音声広告は判定していません。

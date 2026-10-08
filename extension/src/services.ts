@@ -70,6 +70,13 @@ export const SERVICES: ServiceDefinition[] = [
     mainScripts: ["content/sources/nintendo-music-main.js"],
     adapter: "content/sources/nintendo-music.js",
   },
+  {
+    id: "apple-music",
+    label: "Apple Music",
+    matches: ["https://music.apple.com/*"],
+    mainScripts: ["content/sources/apple-music-main.js"],
+    adapter: "content/sources/apple-music.js",
+  },
 ];
 
 /** "https://music.youtube.com/*" のような match pattern が URL に当てはまるか（このファイルで使う形だけを扱う） */
