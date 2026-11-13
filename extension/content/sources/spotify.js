@@ -5,7 +5,7 @@
 // ここでは次だけを補う。
 // - 曲の URL: spotify-main.js が React の props から見つけた spotify:track:<id>（<html data-nowstr-spotify-uri>）。
 //   見つからなければ、再生バーの曲名のリンク（/album/<id>）で代用する
-// - 曲かどうか: アーティストのリンクが /artist/（ポッドキャストは /show/）を指しているときだけ曲として扱う。
+// - 曲かどうか: 再生バーにアーティスト（/artist/、ポッドキャストは /show/）へのリンクがあるときだけ曲として扱う。
 //   Spotify Free の広告や、リンクのないローカルファイルで status を出さないため（web-scrobbler と同じ判定）
 // - 再生位置・長さ: media 要素が見つからないときだけ、再生バーの表示（m:ss）から読む
 
@@ -34,14 +34,13 @@
     return link ? `https://open.spotify.com/${link.type}/${link.id}` : null;
   };
 
-  const isMusic = () => {
-    const artist = spotifyPath(
-      document
-        .querySelector(`${BAR} [data-testid="context-item-info-artist"]`)
-        ?.getAttribute("href"),
-    );
-    return artist?.type === "artist" || artist?.type === "show";
-  };
+  // アーティストのリンクの data-testid は変わる（context-item-info-artist → now-playing-widget-v2-byline、2026-11）ので、
+  // 再生バーの中のリンクを href で見る
+  const isMusic = () =>
+    [...document.querySelectorAll(`${BAR} a[href]`)].some((link) => {
+      const type = spotifyPath(link.getAttribute("href"))?.type;
+      return type === "artist" || type === "show";
+    });
 
   /**
    * "3:33" / "1:02:03" をミリ秒にする。"-0:42"（残り時間の表示）は負の値になる

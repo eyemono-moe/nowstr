@@ -104,7 +104,14 @@
     }
   };
 
-  /** 再生中のものを優先し、なければ最後に再生を始めたもの */
+  /**
+   * 曲の音声ではない、飾りの動画（Spotify の Canvas、Apple Music の動くアートワークなど）。
+   * 消音・ループ・自動再生の 3 つがそろったものとする（曲の再生中に後から再生が始まるので、除かないとこちらが選ばれる）
+   * @param {HTMLMediaElement} element
+   */
+  const decorative = (element) => element.muted && element.loop && element.autoplay;
+
+  /** 再生中のものを優先し、なければ最後に再生を始めたもの。飾りの動画は除く */
   const active = () => {
     for (const element of document.querySelectorAll("video, audio")) {
       if (!elements.has(/** @type {HTMLMediaElement} */ (element))) {
@@ -116,7 +123,7 @@
     let bestScore = -1;
     for (const [element, at] of elements) {
       const usable = Number.isFinite(element.duration) && element.duration > 0;
-      if (!usable) continue;
+      if (!usable || decorative(element)) continue;
       const score = (element.paused ? 0 : 1e15) + at;
       if (score > bestScore) {
         best = element;
